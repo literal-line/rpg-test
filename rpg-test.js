@@ -64,6 +64,7 @@ var RPG_TEST = (function () {
   var sprites = {
     logo: newImage(assets.logo),
     itemDrops: newImage(assets.itemDrops),
+    tilesetMap: newImage(assets.tilesetMap),
     tilesetGrass: newImage(assets.tilesetGrass)
   };
 
@@ -99,7 +100,7 @@ var RPG_TEST = (function () {
     '#041528',
     '#033e5e',
     '#1c92a7',
-    '#77d6c1',
+    '#c1f9ff',
     '#ffe0dc',
     '#ff88a9',
     '#c03b94',
@@ -186,6 +187,7 @@ var RPG_TEST = (function () {
         stage.fillRect(x - width / 2, y - height / 2, width, height);
         if (mouse.click) {
           audio.click.play();
+          mouse.click = false;
           this.run();
         }
       }
@@ -220,8 +222,29 @@ var RPG_TEST = (function () {
     ];
 
     var tilesets = {
+      map: sprites.tilesetMap,
       grass: sprites.tilesetGrass
     };
+
+    var mapData = [
+      'DDDDDD45A000000000000000000076000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      'DDDDDDDD45A00000000000000000B000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      'DDDDDDDDDD4555A0000000000007600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      'DDDDDDD122C000455A000000000B000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      'DDDD122C000000000455A0000076000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      'DDD1C00000000000000045555560000000000000000000000000000000000000000000055550000000000000000000000000000000000000000000000000000000000000000000000',
+      'D12C00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      'DB0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      'DB00000000000000000000000000000000000000000055555500000000000000000000000000000000000000000000000000055555000000000000000000000000000000000000',
+      '22223000000000000000075A000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      '0000930000000000000008DB000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      '00000B0000000000000008D4A00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      '5555560000000000000008DDB00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      '0000000000000000000076DD4555500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      '000000000000000075556DDDDD0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      '0007555555A007556DDDDDDDDDDD00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      '5556DDDDDD4556DDDDDDDDDDDDDDDDD00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
+    ];
 
     var levelMaps = {
       title: [
@@ -300,9 +323,6 @@ var RPG_TEST = (function () {
     };
 
     var level = (function () {
-      var horizontal = Math.floor(gameSettings.width / 16);
-      var vertical = Math.floor(gameSettings.height / 16);
-
       var Stickman = function (obj) {
         this.joints = {
           shoulders: { x: 0, y: 0 },
@@ -393,6 +413,8 @@ var RPG_TEST = (function () {
 
       var renderLevel = function (level) {
         level = levelData[level];
+        var horizontal = Math.floor(gameSettings.width / 16);
+        var vertical = Math.floor(gameSettings.height / 16);
         var tileset = level.tileset;
         var data = level.multiple ? randomInt(5) : level.data[0];
         for (var y = 0; y < vertical; y++) {
@@ -422,6 +444,37 @@ var RPG_TEST = (function () {
       return function (level) {
         renderLevel(level);
         //renderStickmen();
+      };
+    })();
+
+    var map = (function () {
+      var horizontal = Math.floor(gameSettings.width / 16) + 1;
+      var vertical = Math.floor(gameSettings.height / 16) - 10;
+      var offset = 0;
+      var offset2 = 0;
+      var tileset = tilesets.map;
+
+      return function (mapData) {
+        for (var y = 0; y < vertical; y++) {
+          for (var x = 0; x < horizontal; x++) {
+            var cur = mapData[y].charAt(x + Math.floor(offset / 16));
+            stage.drawImage(
+              tileset,
+              (isNaN(parseInt(cur)) ? parseInt('0x' + cur) : parseInt(cur)) *
+                16,
+              0,
+              16,
+              16,
+              x * 16 - (offset % 16),
+              y * 16,
+              16,
+              16
+            );
+          }
+        }
+        if (mouse.x > gameSettings.width - 25) offset += ms / 3;
+        if (mouse.x < 25 && offset > 0) offset -= ms / 3;
+        if (offset < 0) offset = 0;
       };
     })();
 
@@ -789,6 +842,9 @@ var RPG_TEST = (function () {
         case 'newGame':
           level(0);
           newGame();
+          break;
+        case 'map':
+          map(mapData);
           break;
         default:
           invalidState();
