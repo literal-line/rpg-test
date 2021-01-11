@@ -19,7 +19,7 @@ var RPG_TEST = (function () {
   };
 
   var setupEventListeners = function () {
-    canvas.addEventListener('mousemove', function (e) {
+    document.addEventListener('mousemove', function (e) {
       var coords = getMousePos(canvas, e);
       mouse.x = coords.x;
       mouse.y = coords.y;
@@ -139,11 +139,7 @@ var RPG_TEST = (function () {
   var drawText = function (obj) {
     stage.fillStyle = colors[obj.color || 20];
     stage.font = (obj.size || 24) + 'px Zelda DX';
-    stage.fillText(
-      obj.text,
-      obj.center ? obj.x - stage.measureText(obj.text).width / 2 : obj.x,
-      obj.y
-    );
+    stage.fillText(obj.text, obj.center ? obj.x - stage.measureText(obj.text).width / 2 : obj.x, obj.y);
   };
 
   var CButton = function (obj) {
@@ -177,12 +173,7 @@ var RPG_TEST = (function () {
       stage.fillStyle = colors[this.bgColor];
       stage.fillRect(x - width / 2, y - height / 2, width, height);
 
-      if (
-        mx >= x - width / 2 &&
-        mx <= x + width / 2 &&
-        my >= y - height / 2 &&
-        my <= y + height / 2
-      ) {
+      if (mx >= x - width / 2 && mx <= x + width / 2 && my >= y - height / 2 && my <= y + height / 2) {
         stage.fillStyle = hexToRgba(colors[2], 0.25);
         stage.fillRect(x - width / 2, y - height / 2, width, height);
         if (mouse.click) {
@@ -212,14 +203,7 @@ var RPG_TEST = (function () {
       member4: { class: 'Member 4' }
     };
 
-    var classList = [
-      'Assassin',
-      'Ninja',
-      'Nunchaku-ka',
-      'Monk',
-      'Mage',
-      'Gunner'
-    ];
+    var classList = ['Assassin', 'Ninja', 'Nunchaku-ka', 'Monk', 'Mage', 'Gunner'];
 
     var tilesets = {
       map: sprites.tilesetMap,
@@ -290,6 +274,13 @@ var RPG_TEST = (function () {
       }
     ];
 
+    var mouseBounds = function () {
+      if (mouse.x < 0) mouse.x = 0;
+      if (mouse.x > gameSettings.width) mouse.x = gameSettings.width;
+      if (mouse.y < 0) mouse.y = 0;
+      if (mouse.y > gameSettings.height) mouse.y = gameSettings.height;
+    };
+
     var invalidState = function () {
       drawText({
         text: 'ERROR:',
@@ -345,36 +336,24 @@ var RPG_TEST = (function () {
 
         joints.handRight.rot += 0.01;
 
-        joints.elbowRight.x =
-          joints.shoulders.x + 5 * Math.cos(joints.elbowRight.rot);
-        joints.elbowRight.y =
-          joints.shoulders.y + 5 * Math.sin(joints.elbowRight.rot);
-        joints.elbowLeft.x =
-          joints.shoulders.x - 5 * Math.cos(joints.elbowLeft.rot);
-        joints.elbowLeft.y =
-          joints.shoulders.y + 5 * Math.sin(joints.elbowLeft.rot);
-        joints.handRight.x =
-          joints.elbowRight.x + 5 * Math.cos(joints.handRight.rot);
-        joints.handRight.y =
-          joints.elbowRight.y + 5 * Math.sin(joints.handRight.rot);
-        joints.handLeft.x =
-          joints.elbowLeft.x - 5 * Math.cos(joints.handLeft.rot);
-        joints.handLeft.y =
-          joints.elbowLeft.y - 5 * Math.sin(joints.handLeft.rot);
+        joints.elbowRight.x = joints.shoulders.x + 5 * Math.cos(joints.elbowRight.rot);
+        joints.elbowRight.y = joints.shoulders.y + 5 * Math.sin(joints.elbowRight.rot);
+        joints.elbowLeft.x = joints.shoulders.x - 5 * Math.cos(joints.elbowLeft.rot);
+        joints.elbowLeft.y = joints.shoulders.y + 5 * Math.sin(joints.elbowLeft.rot);
+        joints.handRight.x = joints.elbowRight.x + 5 * Math.cos(joints.handRight.rot);
+        joints.handRight.y = joints.elbowRight.y + 5 * Math.sin(joints.handRight.rot);
+        joints.handLeft.x = joints.elbowLeft.x - 5 * Math.cos(joints.handLeft.rot);
+        joints.handLeft.y = joints.elbowLeft.y - 5 * Math.sin(joints.handLeft.rot);
         joints.hips.x = joints.shoulders.x; // + 0 * Math.cos(joints.hips.rot);
         joints.hips.y = joints.shoulders.y + 10; // * Math.sin(joints.hips.rot);
         joints.kneeRight.x = joints.hips.x + 5 * Math.cos(joints.kneeRight.rot);
         joints.kneeRight.y = joints.hips.y + 5 * Math.sin(joints.kneeRight.rot);
         joints.kneeLeft.x = joints.hips.x - 5 * Math.cos(joints.kneeLeft.rot);
         joints.kneeLeft.y = joints.hips.y + 5 * Math.sin(joints.kneeLeft.rot);
-        joints.footRight.x =
-          joints.kneeRight.x + 5 * Math.cos(joints.footRight.rot);
-        joints.footRight.y =
-          joints.kneeRight.y + 5 * Math.sin(joints.footRight.rot);
-        joints.footLeft.x =
-          joints.kneeLeft.x - 5 * Math.cos(joints.footLeft.rot);
-        joints.footLeft.y =
-          joints.kneeLeft.y + 5 * Math.sin(joints.footLeft.rot);
+        joints.footRight.x = joints.kneeRight.x + 5 * Math.cos(joints.footRight.rot);
+        joints.footRight.y = joints.kneeRight.y + 5 * Math.sin(joints.footRight.rot);
+        joints.footLeft.x = joints.kneeLeft.x - 5 * Math.cos(joints.footLeft.rot);
+        joints.footLeft.y = joints.kneeLeft.y + 5 * Math.sin(joints.footLeft.rot);
         console.log(Math.cos(joints.handRight.rot));
       };
 
@@ -382,12 +361,7 @@ var RPG_TEST = (function () {
         var joints = this.joints;
         stage.strokeStyle = colors[20];
         stage.lineWidth = 1;
-        drawLine(
-          joints.shoulders.x,
-          joints.shoulders.y,
-          joints.hips.x,
-          joints.hips.y
-        );
+        drawLine(joints.shoulders.x, joints.shoulders.y, joints.hips.x, joints.hips.y);
         stage.beginPath();
         stage.moveTo(joints.handLeft.x, joints.handLeft.y);
         stage.lineTo(joints.elbowLeft.x, joints.elbowLeft.y);
@@ -419,17 +393,7 @@ var RPG_TEST = (function () {
         var data = level.multiple ? randomInt(5) : level.data[0];
         for (var y = 0; y < vertical; y++) {
           for (var x = 0; x < horizontal; x++) {
-            stage.drawImage(
-              tileset,
-              parseInt(data[y].charAt(x)) * 16,
-              0,
-              16,
-              16,
-              x * 16,
-              y * 16,
-              16,
-              16
-            );
+            stage.drawImage(tileset, parseInt(data[y].charAt(x)) * 16, 0, 16, 16, x * 16, y * 16, 16, 16);
           }
         }
       };
@@ -460,8 +424,7 @@ var RPG_TEST = (function () {
             var cur = mapData[y].charAt(x + Math.floor(offset / 16));
             stage.drawImage(
               tileset,
-              (isNaN(parseInt(cur)) ? parseInt('0x' + cur) : parseInt(cur)) *
-                16,
+              (isNaN(parseInt(cur)) ? parseInt('0x' + cur) : parseInt(cur)) * 16,
               0,
               16,
               16,
@@ -472,8 +435,8 @@ var RPG_TEST = (function () {
             );
           }
         }
-        if (mouse.x > gameSettings.width - 25) offset += ms / 3;
-        if (mouse.x < 25 && offset > 0) offset -= ms / 3;
+        if (mouse.x > gameSettings.width - 100) offset += ms / 2;
+        if (mouse.x < 100 && offset > 0) offset -= ms / 2;
         if (offset < 0) offset = 0;
       };
     })();
@@ -528,13 +491,7 @@ var RPG_TEST = (function () {
           y: 115,
           center: true
         });
-        stage.drawImage(
-          sprites.logo,
-          gameSettings.width / 2 - sprites.logo.width / 2,
-          40,
-          217,
-          61
-        );
+        stage.drawImage(sprites.logo, gameSettings.width / 2 - sprites.logo.width / 2, 40, 217, 61);
 
         for (var b in buttons) if (buttons[b]) buttons[b].draw();
       };
@@ -754,8 +711,7 @@ var RPG_TEST = (function () {
       };
 
       var updateTeamData = function () {
-        teamData['member' + selectedMember].class =
-          classList[selectedClass - 1];
+        teamData['member' + selectedMember].class = classList[selectedClass - 1];
         checklist[selectedMember - 1] = true;
       };
 
@@ -804,17 +760,7 @@ var RPG_TEST = (function () {
             center: true
           });
           cur.draw();
-          stage.drawImage(
-            sprites.itemDrops,
-            (classNumber + 1) * 8,
-            0,
-            8,
-            8,
-            cur.x - 16,
-            cur.y - 16,
-            32,
-            32
-          );
+          stage.drawImage(sprites.itemDrops, (classNumber + 1) * 8, 0, 8, 8, cur.x - 16, cur.y - 16, 32, 32);
         }
         buttons.begin.color = checklist.every(Boolean) ? 10 : 1;
         buttons.back.draw();
@@ -829,6 +775,7 @@ var RPG_TEST = (function () {
       ms = delta - lastDelta;
       fps = Math.floor(1000 / ms);
       stage.clearRect(0, 0, gameSettings.width, gameSettings.height);
+      mouseBounds();
 
       switch (STATE) {
         case 'title':
@@ -879,14 +826,6 @@ function newImage(src) {
 function hexToRgba(hex, opacity) {
   var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
-    ? 'rgba(' +
-        parseInt(result[1], 16) +
-        ', ' +
-        parseInt(result[2], 16) +
-        ', ' +
-        parseInt(result[3], 16) +
-        ', ' +
-        opacity +
-        ')'
+    ? 'rgba(' + parseInt(result[1], 16) + ', ' + parseInt(result[2], 16) + ', ' + parseInt(result[3], 16) + ', ' + opacity + ')'
     : null;
 }
