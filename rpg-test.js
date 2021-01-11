@@ -18,7 +18,7 @@ var RPG_TEST = (function () {
     aa: false
   };
 
-  var setupEventListerers = function () {
+  var setupEventListeners = function () {
     canvas.addEventListener('mousemove', function (e) {
       var coords = getMousePos(canvas, e);
       mouse.x = coords.x;
@@ -115,7 +115,7 @@ var RPG_TEST = (function () {
     canvas.style.height = gameSettings.heightCSS;
     canvas.style.background = gameSettings.bg;
     stage.imageSmoothingEnabled = gameSettings.aa;
-    setupEventListerers();
+    setupEventListeners();
   };
 
   var getMousePos = function (c, e) {
