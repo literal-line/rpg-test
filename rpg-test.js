@@ -2,38 +2,39 @@
 // more at quique.gq
 
 var RPG_TEST = (function () {
-  "use strict";
+  'use strict';
 
-  var canvas = document.createElement("canvas");
-  var stage = canvas.getContext("2d");
+  var canvas = document.createElement('canvas');
+  var stage = canvas.getContext('2d');
   var gameSettings = {
-    version: "v0.1-20210111",
+    version: 'v0.1-20210111',
+    authors: ['Literal Line'],
     width: 768,
     height: 432,
-    widthCSS: "768px",
-    heightCSS: "432px",
-    bg: "#000000",
+    widthCSS: '768px',
+    heightCSS: '432px',
+    bg: '#000000',
     fps: 60,
     aa: false
   };
 
   var setupEventListerers = function () {
-    canvas.addEventListener("mousemove", function (e) {
+    canvas.addEventListener('mousemove', function (e) {
       var coords = getMousePos(canvas, e);
       mouse.x = coords.x;
       mouse.y = coords.y;
     });
-    canvas.addEventListener("contextmenu", function (e) {
+    canvas.addEventListener('contextmenu', function (e) {
       e.preventDefault();
     });
-    canvas.addEventListener("mousedown", function () {
+    canvas.addEventListener('mousedown', function () {
       mouse.down = true;
       mouseClick();
     });
-    canvas.addEventListener("mouseup", function () {
+    canvas.addEventListener('mouseup', function () {
       mouse.down = false;
     });
-    addEventListener("blur", function () {
+    addEventListener('blur', function () {
       mouse.down = false;
     });
   };
@@ -53,9 +54,11 @@ var RPG_TEST = (function () {
   };
 
   var assets = {
-    logo: "./assets/logo.png",
-    itemDrops: "./assets/itemDrops.png",
-    tilesetGrass: "./assets/tilesetGrass.png"
+    logo: './assets/logo.png',
+    itemDrops: './assets/itemDrops.png',
+    tilesetMap: './assets/tilesetMap.png',
+    tilesetGrass: './assets/tilesetGrass.png',
+    soundClick: './assets/click.wav'
   };
 
   var sprites = {
@@ -64,42 +67,48 @@ var RPG_TEST = (function () {
     tilesetGrass: newImage(assets.tilesetGrass)
   };
 
+  var audio = {
+    click: new Audio(assets.soundClick)
+  };
+
   var colors = [
-    "#43002a",
-    "#890027",
-    "#d9243c",
-    "#ff6157",
-    "#ffb762",
-    "#c76e46",
-    "#73392e",
-    "#34111f",
-    "#000000",
-    "#273b2d",
-    "#458239",
-    "#9cb93b",
-    "#ffd832",
-    "#ff823b",
-    "#d1401f",
-    "#7c191a",
-    "#310c1b",
-    "#833f34",
-    "#eb9c6e",
-    "#ffdaac",
-    "#fffff4",
-    "#bfc3c6",
-    "#6d8a8d",
-    "#293b49",
-    "#041528",
-    "#033e5e",
-    "#1c92a7",
-    "#77d6c1",
-    "#ffe0dc",
-    "#ff88a9",
-    "#c03b94",
-    "#601761"
+    '#43002a',
+    '#890027',
+    '#d9243c',
+    '#ff6157',
+    '#ffb762',
+    '#c76e46',
+    '#73392e',
+    '#34111f',
+    '#000000',
+    '#273b2d',
+    '#458239',
+    '#9cb93b',
+    '#ffd832',
+    '#ff823b',
+    '#d1401f',
+    '#7c191a',
+    '#310c1b',
+    '#833f34',
+    '#eb9c6e',
+    '#ffdaac',
+    '#fffff4',
+    '#bfc3c6',
+    '#6d8a8d',
+    '#293b49',
+    '#041528',
+    '#033e5e',
+    '#1c92a7',
+    '#77d6c1',
+    '#ffe0dc',
+    '#ff88a9',
+    '#c03b94',
+    '#601761'
   ];
 
   var init = function () {
+    console.log('rpg-test ' + gameSettings.version);
+    console.log('Authors: ' + gameSettings.authors);
     canvas.width = gameSettings.width;
     canvas.height = gameSettings.height;
     canvas.style.width = gameSettings.widthCSS;
@@ -128,7 +137,7 @@ var RPG_TEST = (function () {
 
   var drawText = function (obj) {
     stage.fillStyle = colors[obj.color || 20];
-    stage.font = (obj.size || 24) + "px Zelda DX";
+    stage.font = (obj.size || 24) + 'px Zelda DX';
     stage.fillText(
       obj.text,
       obj.center ? obj.x - stage.measureText(obj.text).width / 2 : obj.x,
@@ -150,8 +159,7 @@ var RPG_TEST = (function () {
   };
 
   CButton.prototype.draw = (function () {
-    var click = new Audio("./assets/click.wav");
-    click.volume = 0.5;
+    audio.click.volume = 0.5;
 
     return function () {
       var mx = mouse.x;
@@ -177,7 +185,7 @@ var RPG_TEST = (function () {
         stage.fillStyle = hexToRgba(colors[2], 0.25);
         stage.fillRect(x - width / 2, y - height / 2, width, height);
         if (mouse.click) {
-          click.play();
+          audio.click.play();
           this.run();
         }
       }
@@ -193,25 +201,25 @@ var RPG_TEST = (function () {
   })();
 
   var gameLoop = (function () {
-    var state = "title";
+    var state = 'title';
     var lastDelta = 0;
     var fps;
     var ms;
 
     var teamData = {
-      member1: { class: "Member 1" }, // this is placeholder for the newGame screen
-      member2: { class: "Member 2" },
-      member3: { class: "Member 3" },
-      member4: { class: "Member 4" }
+      member1: { class: 'Member 1' }, // this is placeholder for the newGame screen
+      member2: { class: 'Member 2' },
+      member3: { class: 'Member 3' },
+      member4: { class: 'Member 4' }
     };
 
     var classList = [
-      "Assassin",
-      "Ninja",
-      "Nunchaku-ka",
-      "Monk",
-      "Mage",
-      "Gunner"
+      'Assassin',
+      'Ninja',
+      'Nunchaku-ka',
+      'Monk',
+      'Mage',
+      'Gunner'
     ];
 
     var tilesets = {
@@ -221,33 +229,33 @@ var RPG_TEST = (function () {
     var levelMaps = {
       title: [
         [
-          "000000000000000000000000000000000000000000000000",
-          "000000000000000000000000000000000000000000000000",
-          "000000000000000000000000000000000000000000000000",
-          "000000000000000000000000000000000000000000000000",
-          "000000000000000000000000000000000000000000000000",
-          "000000000000000000000000000000000000000000000000",
-          "000000000000000000000000000000000000000000000000",
-          "000000000000000000000000000000000000000000000000",
-          "000000000000000000000000000000000000000000000000",
-          "000000000000000000000000000000000000000000000000",
-          "000000000000000000000000000000000000000000000000",
-          "000000000000000000000000000000000000000000000000",
-          "000000000000000000000000000000000000000000000000",
-          "000000000000000000000000000000000000000000000000",
-          "000000000000000000000000000000000000000000000000",
-          "000000000000000000000000000000000000000000000000",
-          "000000000000000000000000000000000000000000000000",
-          "000000000000000000000000000000000000000000000000",
-          "000000000000000000000000000000000000000000000000",
-          "000000000000000000000000000000000000000000000000",
-          "222230000000000000000000000000000000000000012222",
-          "555552222300000000000000000000000000001222255555",
-          "555555555522223000000000000000000122225555555555",
-          "555555555555555222222222222222222555555555555555",
-          "555555555555555555555555555555555555555555555555",
-          "555555555555555555555555555555555555555555555555",
-          "555555555555555555555555555555555555555555555555"
+          '000000000000000000000000000000000000000000000000',
+          '000000000000000000000000000000000000000000000000',
+          '000000000000000000000000000000000000000000000000',
+          '000000000000000000000000000000000000000000000000',
+          '000000000000000000000000000000000000000000000000',
+          '000000000000000000000000000000000000000000000000',
+          '000000000000000000000000000000000000000000000000',
+          '000000000000000000000000000000000000000000000000',
+          '000000000000000000000000000000000000000000000000',
+          '000000000000000000000000000000000000000000000000',
+          '000000000000000000000000000000000000000000000000',
+          '000000000000000000000000000000000000000000000000',
+          '000000000000000000000000000000000000000000000000',
+          '000000000000000000000000000000000000000000000000',
+          '000000000000000000000000000000000000000000000000',
+          '000000000000000000000000000000000000000000000000',
+          '000000000000000000000000000000000000000000000000',
+          '000000000000000000000000000000000000000000000000',
+          '000000000000000000000000000000000000000000000000',
+          '000000000000000000000000000000000000000000000000',
+          '222230000000000000000000000000000000000000012222',
+          '555552222300000000000000000000000000001222255555',
+          '555555555522223000000000000000000122225555555555',
+          '555555555555555222222222222222222555555555555555',
+          '555555555555555555555555555555555555555555555555',
+          '555555555555555555555555555555555555555555555555',
+          '555555555555555555555555555555555555555555555555'
         ]
       ],
       land: []
@@ -255,7 +263,7 @@ var RPG_TEST = (function () {
 
     var levelData = [
       {
-        name: "title",
+        name: 'title',
         tileset: tilesets.grass,
         data: levelMaps.title,
         multiple: false
@@ -264,7 +272,7 @@ var RPG_TEST = (function () {
 
     var invalidState = function () {
       drawText({
-        text: "ERROR:",
+        text: 'ERROR:',
         size: 48,
         color: 2,
         x: gameSettings.width / 2,
@@ -279,14 +287,14 @@ var RPG_TEST = (function () {
         center: true
       });
       drawText({
-        text: "DOES NOT EXIST!",
+        text: 'DOES NOT EXIST!',
         color: 2,
         x: gameSettings.width / 2,
         y: gameSettings.height / 2 + 60,
         center: true
       });
       drawText({
-        text: "Actual gameplay coming soon... ;)",
+        text: 'Actual gameplay coming soon... ;)',
         color: 12,
         x: gameSettings.width / 2,
         y: gameSettings.height - 60,
@@ -387,7 +395,7 @@ var RPG_TEST = (function () {
       };
 
       var renderLevel = function (level) {
-        var level = levelData[level];
+        level = levelData[level];
         var tileset = level.tileset;
         var data = level.multiple ? randomInt(5) : level.data[0];
         for (var y = 0; y < vertical; y++) {
@@ -421,36 +429,35 @@ var RPG_TEST = (function () {
     })();
 
     var title = (function () {
-      var currentItem = 0;
       var buttons = {
         begin: new CButton({
-          text: "New Game",
+          text: 'New Game',
           x: gameSettings.width / 2,
           y: gameSettings.height / 2,
           width: 235,
           height: 36,
           run: function () {
-            state = "newGame";
+            state = 'newGame';
           }
         }),
         credits: new CButton({
-          text: "Credits",
+          text: 'Credits',
           x: gameSettings.width / 2,
           y: gameSettings.height / 2 + 50,
           width: 235,
           height: 36,
           run: function () {
-            state = "credits";
+            state = 'credits';
           }
         }),
         website: new CButton({
-          text: "More Games...",
+          text: 'More Games...',
           x: gameSettings.width / 2,
           y: gameSettings.height / 2 + 100,
           width: 235,
           height: 36,
           run: function () {
-            open("https://quique.gq/");
+            open('https://quique.gq/');
           }
         })
       };
@@ -464,7 +471,7 @@ var RPG_TEST = (function () {
           y: gameSettings.height
         });
         drawText({
-          text: "a game by Literal Line",
+          text: 'a game by Literal Line',
           color: 14,
           size: 16,
           x: gameSettings.width / 2,
@@ -486,42 +493,42 @@ var RPG_TEST = (function () {
     var credits = (function () {
       var buttons = {
         back: new CButton({
-          text: "Return to menu",
+          text: 'Return to menu',
           x: gameSettings.width / 2,
           y: gameSettings.height - 50,
           width: 250,
           height: 36,
           run: function () {
-            state = "title";
+            state = 'title';
           }
         }),
         sr: new CButton({
-          text: "Stick Ranger",
+          text: 'Stick Ranger',
           color: 2,
           x: 650,
           y: gameSettings.height / 2 + 25,
           width: 205,
           height: 25,
           run: function () {
-            open("https://dan-ball.jp/en/javagame/ranger/");
+            open('https://dan-ball.jp/en/javagame/ranger/');
           }
         }),
         lospec: new CButton({
-          text: "lospec.com",
+          text: 'lospec.com',
           color: 2,
           x: 450,
           y: gameSettings.height / 2 + 55,
           width: 170,
           height: 25,
           run: function () {
-            open("https://lospec.com/palette-list/pineapple-32");
+            open('https://lospec.com/palette-list/pineapple-32');
           }
         })
       };
 
       return function () {
         drawText({
-          text: "Credits",
+          text: 'Credits',
           color: 14,
           size: 54,
           x: gameSettings.width / 2,
@@ -529,7 +536,7 @@ var RPG_TEST = (function () {
           center: true
         });
         drawText({
-          text: "• Coding and game engine by Literal Line",
+          text: '• Coding and game engine by Literal Line',
           x: 15,
           y: gameSettings.height / 2
         });
@@ -539,12 +546,12 @@ var RPG_TEST = (function () {
           y: gameSettings.height / 2 + 30
         });
         drawText({
-          text: "• Color pallete from lospec.com",
+          text: '• Color pallete from lospec.com',
           x: 15,
           y: gameSettings.height / 2 + 60
         });
         drawText({
-          text: "  (slightly modified)",
+          text: '  (slightly modified)',
           x: 15,
           y: gameSettings.height / 2 + 90
         });
@@ -669,7 +676,7 @@ var RPG_TEST = (function () {
           })
         },
         back: new CButton({
-          text: "Back",
+          text: 'Back',
           color: 20,
           x: gameSettings.width / 2 - 200,
           y: gameSettings.height - 40,
@@ -678,33 +685,33 @@ var RPG_TEST = (function () {
             selectedMember = 1;
             selectedClass = undefined;
             checklist = [false, false, false, false];
-            teamData.member1.class = "Member 1";
-            teamData.member2.class = "Member 2";
-            teamData.member3.class = "Member 3";
-            teamData.member4.class = "Member 4";
-            state = "title";
+            teamData.member1.class = 'Member 1';
+            teamData.member2.class = 'Member 2';
+            teamData.member3.class = 'Member 3';
+            teamData.member4.class = 'Member 4';
+            state = 'title';
           }
         }),
         begin: new CButton({
-          text: "Begin",
+          text: 'Begin',
           x: gameSettings.width / 2 + 200,
           y: gameSettings.height - 40,
           height: 36,
           run: function () {
-            if (checklist.every(Boolean)) state = "map";
+            if (checklist.every(Boolean)) state = 'map';
           }
         })
       };
 
       var updateTeamData = function () {
-        teamData["member" + selectedMember].class =
+        teamData['member' + selectedMember].class =
           classList[selectedClass - 1];
         checklist[selectedMember - 1] = true;
       };
 
       return function () {
         drawText({
-          text: "New Game",
+          text: 'New Game',
           color: 14,
           size: 54,
           x: gameSettings.width / 2,
@@ -712,7 +719,7 @@ var RPG_TEST = (function () {
           center: true
         });
         drawText({
-          text: "Create your team:",
+          text: 'Create your team:',
           color: 14,
           size: 20,
           x: gameSettings.width / 2,
@@ -726,7 +733,7 @@ var RPG_TEST = (function () {
 
           cur.borderColor = memberNumber === selectedMember ? 2 : 20;
           drawText({
-            text: teamData["member" + memberNumber].class,
+            text: teamData['member' + memberNumber].class,
             size: 16,
             x: cur.x,
             y: cur.y + 50,
@@ -771,15 +778,15 @@ var RPG_TEST = (function () {
       stage.clearRect(0, 0, gameSettings.width, gameSettings.height);
 
       switch (state) {
-        case "title":
+        case 'title':
           level(0);
           title();
           break;
-        case "credits":
+        case 'credits':
           level(0);
           credits();
           break;
-        case "newGame":
+        case 'newGame':
           level(0);
           newGame();
           break;
@@ -787,7 +794,7 @@ var RPG_TEST = (function () {
           invalidState();
       }
 
-      drawText({ text: "FPS: " + fps, x: 0, y: 20 });
+      drawText({ text: 'FPS: ' + fps, x: 0, y: 20 });
       /*drawText({ text: 'MS: ' + ms, x: 0, y: 40 });*/
       lastDelta = delta;
       requestAnimationFrame(gameLoop);
@@ -808,7 +815,7 @@ function randomInt(max) {
 }
 
 function newImage(src) {
-  var img = document.createElement("img");
+  var img = document.createElement('img');
   img.src = src;
   return img;
 }
@@ -816,14 +823,14 @@ function newImage(src) {
 function hexToRgba(hex, opacity) {
   var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
-    ? "rgba(" +
+    ? 'rgba(' +
         parseInt(result[1], 16) +
-        ", " +
+        ', ' +
         parseInt(result[2], 16) +
-        ", " +
+        ', ' +
         parseInt(result[3], 16) +
-        ", " +
+        ', ' +
         opacity +
-        ")"
+        ')'
     : null;
 }
