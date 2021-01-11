@@ -8,14 +8,13 @@ var RPG_TEST = (function () {
   var stage = canvas.getContext('2d');
   var gameSettings = {
     version: 'v0.1-20210111-729',
-    authors: ['Literal Line'],
+    authors: ['Literal Line'], // incase you mod or whatever
     width: 768,
     height: 432,
     widthCSS: '768px',
     heightCSS: '432px',
     bg: '#000000',
-    fps: 60,
-    aa: false
+    aa: false // leave this off to keep images c r i s p
   };
 
   var setupEventListeners = function () {
@@ -39,21 +38,21 @@ var RPG_TEST = (function () {
     });
   };
 
-  var mouseClick = function () {
+  var mouseClick = function () { // prevents buttons from being clicked when click-dragging
     mouse.click = true;
     setTimeout(function () {
       mouse.click = false;
     }, 10);
   };
 
-  var mouse = {
+  var mouse = { // mouse data
     x: 0,
     y: 0,
     down: false,
-    click: false
+    click: false // <-- will briefly become true when mouseClick() is called
   };
 
-  var assets = {
+  var assets = { // images/audio
     logo: './assets/logo.png',
     itemDrops: './assets/itemDrops.png',
     tilesetMap: './assets/tilesetMap.png',
@@ -61,7 +60,7 @@ var RPG_TEST = (function () {
     soundClick: './assets/click.wav'
   };
 
-  var sprites = {
+  var sprites = { // image to img
     logo: newImage(assets.logo),
     itemDrops: newImage(assets.itemDrops),
     tilesetMap: newImage(assets.tilesetMap),
@@ -72,7 +71,8 @@ var RPG_TEST = (function () {
     click: new Audio(assets.soundClick)
   };
 
-  var colors = [
+  var colors = [ // color pallete for text. idk why im using this, just want consistent colors i guess...
+    // slightly modified from here: https://lospec.com/palette-list/pineapple-32
     '#43002a',
     '#890027',
     '#d9243c',
@@ -119,7 +119,7 @@ var RPG_TEST = (function () {
     setupEventListeners();
   };
 
-  var getMousePos = function (c, e) {
+  var getMousePos = function (c, e) { // gets mouse pos on canvas by taking actual canvas position on document into account
     var rect = c.getBoundingClientRect();
     var scaleX = gameSettings.width / rect.width;
     var scaleY = gameSettings.height / rect.height;
@@ -129,20 +129,20 @@ var RPG_TEST = (function () {
     };
   };
 
-  var drawLine = function (startX, startY, endX, endY) {
+  var drawLine = function (startX, startY, endX, endY) { // draw a line but easier ¯\_(ツ)_/¯
     stage.beginPath();
     stage.moveTo(startX, startY);
     stage.lineTo(endX, endY);
     stage.stroke();
   };
 
-  var drawText = function (obj) {
+  var drawText = function (obj) { // more uniform way of drawing text
     stage.fillStyle = colors[obj.color || 20];
     stage.font = (obj.size || 24) + 'px Zelda DX';
     stage.fillText(obj.text, obj.center ? obj.x - stage.measureText(obj.text).width / 2 : obj.x, obj.y);
   };
 
-  var CButton = function (obj) {
+  var CButton = function (obj) { // constructor for buttons
     this.text = obj.text;
     this.color = obj.color || 20;
     this.x = obj.x;
@@ -152,10 +152,10 @@ var RPG_TEST = (function () {
     this.borderColor = obj.borderColor || 1;
     this.bgColor = obj.bgColor || 8;
     this.border = obj.border;
-    this.run = obj.run;
+    this.run = obj.run; // <-- will call this function when clicked
   };
 
-  CButton.prototype.draw = (function () {
+  CButton.prototype.draw = (function () { // draw proto (might change name later...)
     audio.click.volume = 0.5;
 
     return function () {
@@ -194,43 +194,43 @@ var RPG_TEST = (function () {
   })();
 
   var gameLoop = (function () {
-    var STATE = 'title';
+    var STATE = 'title'; // keeps track of game state. which functions run during which state is determined by a switch statement at the end of this IIFE
 
-    var teamData = {
-      member1: { class: 'Member 1' }, // this is placeholder for the newGame screen
+    var teamData = { // data for each stickman (will change later)
+      member1: { class: 'Member 1' }, //  placeholder classes for the newGame screen
       member2: { class: 'Member 2' },
       member3: { class: 'Member 3' },
       member4: { class: 'Member 4' }
     };
 
-    var classList = ['Assassin', 'Ninja', 'Nunchaku-ka', 'Monk', 'Mage', 'Gunner'];
+    var classList = ['Assassin', 'Ninja', 'Nunchaku-ka', 'Monk', 'Mage', 'Gunner']; // this array seems to be working ok for now...
 
-    var tilesets = {
+    var tilesets = { // tile spritesheets
       map: sprites.tilesetMap,
       grass: sprites.tilesetGrass
     };
 
-    var mapData = [
-      'DDDDDD45A000000000000000000076000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-      'DDDDDDDD45A00000000000000000B000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-      'DDDDDDDDDD4555A0000000000007600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-      'DDDDDDD122C000455A000000000B000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-      'DDDD122C000000000455A0000076000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-      'DDD1C00000000000000045555560000000000000000000000000000000000000000000055550000000000000000000000000000000000000000000000000000000000000000000000',
+    var mapData = [ // big chunky soup
+      'DDDDDD45A000000000000000000076000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      'DDDDDDDD45A00000000000000000B0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      'DDDDDDDDDD4555A000000000000760000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      'DDDDDDD122C000455A000000000B00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      'DDDD122C000000000455A000007600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      'DDD1C0000000000000004555556000000000000000000000000000000000000000000005555000000000000000000000000000000000000000000000000000000000000000000000',
       'D12C00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
       'DB0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-      'DB00000000000000000000000000000000000000000055555500000000000000000000000000000000000000000000000000055555000000000000000000000000000000000000',
+      'DB0000000000000000000000000000000000000000005555550000000000000000000000000000000000000000000000000005555500000000000000000000000000000000000000',
       '22223000000000000000075A000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
       '0000930000000000000008DB000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
       '00000B0000000000000008D4A00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
       '5555560000000000000008DDB00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-      '0000000000000000000076DD4555500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      '0000000000000000000076DD455550000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
       '000000000000000075556DDDDD0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
       '0007555555A007556DDDDDDDDDDD00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
       '5556DDDDDD4556DDDDDDDDDDDDDDDDD00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
     ];
 
-    var levelMaps = {
+    var levelMaps = { // different maps
       title: [
         [
           '000000000000000000000000000000000000000000000000',
@@ -262,7 +262,7 @@ var RPG_TEST = (function () {
           '555555555555555555555555555555555555555555555555'
         ]
       ],
-      land: []
+      land: [ /* bruh */]
     };
 
     var levelData = [
@@ -270,50 +270,25 @@ var RPG_TEST = (function () {
         name: 'title',
         tileset: tilesets.grass,
         data: levelMaps.title,
-        multiple: false
+        multiple: false // will pick random map if set to true (intended for actual levels later on...)
       }
     ];
 
-    var mouseBounds = function () {
+    var mouseBounds = function () { // mouse pos will stick to canvas border when out of bounds
       if (mouse.x < 0) mouse.x = 0;
       if (mouse.x > gameSettings.width) mouse.x = gameSettings.width;
       if (mouse.y < 0) mouse.y = 0;
       if (mouse.y > gameSettings.height) mouse.y = gameSettings.height;
     };
 
-    var invalidState = function () {
-      drawText({
-        text: 'ERROR:',
-        size: 48,
-        color: 2,
-        x: gameSettings.width / 2,
-        y: gameSettings.height / 2,
-        center: true
-      });
-      drawText({
-        text: 'REQUESTED STATE "' + STATE + '"',
-        color: 2,
-        x: gameSettings.width / 2,
-        y: gameSettings.height / 2 + 40,
-        center: true
-      });
-      drawText({
-        text: 'DOES NOT EXIST!',
-        color: 2,
-        x: gameSettings.width / 2,
-        y: gameSettings.height / 2 + 60,
-        center: true
-      });
-      drawText({
-        text: 'Actual gameplay coming soon... ;)',
-        color: 12,
-        x: gameSettings.width / 2,
-        y: gameSettings.height - 60,
-        center: true
-      });
+    var invalidState = function () { // if current game state has no case in switch statement
+      drawText({ text: 'ERROR:', size: 48, color: 2, x: gameSettings.width / 2, y: gameSettings.height / 2, center: true });
+      drawText({ text: 'REQUESTED STATE "' + STATE + '"', color: 2, x: gameSettings.width / 2, y: gameSettings.height / 2 + 40, center: true });
+      drawText({ text: 'DOES NOT EXIST!', color: 2, x: gameSettings.width / 2, y: gameSettings.height / 2 + 60, center: true });
+      drawText({ text: 'Actual gameplay coming soon... ;)', color: 12, x: gameSettings.width / 2, y: gameSettings.height - 60, center: true });
     };
 
-    var level = (function () {
+    var level = (function () { // draw level and eventually draw stickmen once i figure out the physics
       var Stickman = function (obj) {
         this.joints = {
           shoulders: { x: 0, y: 0 },
@@ -333,7 +308,7 @@ var RPG_TEST = (function () {
         // bruh
       };
 
-      Stickman.prototype.draw = function () {
+      Stickman.prototype.draw = function () { // this works and will probably stay here a while...
         var joints = this.joints;
         stage.strokeStyle = colors[20];
         stage.lineWidth = 1;
@@ -358,18 +333,27 @@ var RPG_TEST = (function () {
       };
 
       var stickmen = {
-        stickman1: new Stickman()
+        stickman1: new Stickman() // he has no friends
       };
 
-      var renderLevel = function (level) {
+      var renderLevel = function (level) { // draw the level using data from an array
         level = levelData[level];
         var horizontal = Math.floor(gameSettings.width / 16);
         var vertical = Math.floor(gameSettings.height / 16);
         var tileset = level.tileset;
-        var data = level.multiple ? randomInt(5) : level.data[0];
+        var data = level.multiple ? randomInt(5) : level.data[0]; // pick random level 0-4 unless there is only one (e.g. title screen) 
         for (var y = 0; y < vertical; y++) {
           for (var x = 0; x < horizontal; x++) {
-            stage.drawImage(tileset, parseInt(data[y].charAt(x)) * 16, 0, 16, 16, x * 16, y * 16, 16, 16);
+            stage.drawImage(
+              tileset,
+              parseInt(data[y].charAt(x)) * 16,
+              0,
+              16,
+              16,
+              x * 16,
+              y * 16,
+              16,
+              16);
           }
         }
       };
@@ -383,11 +367,11 @@ var RPG_TEST = (function () {
 
       return function (level) {
         renderLevel(level);
-        //renderStickmen();
+        //renderStickmen(); // bruh
       };
     })();
 
-    var map = (function () {
+    var map = (function () { // draw map using similar method to level drawing
       var horizontal = Math.floor(gameSettings.width / 16) + 1;
       var vertical = Math.floor(gameSettings.height / 16) - 10;
       var offset = 0;
@@ -400,7 +384,7 @@ var RPG_TEST = (function () {
             var cur = mapData[y].charAt(x + Math.floor(offset / 16));
             stage.drawImage(
               tileset,
-              (isNaN(parseInt(cur)) ? parseInt('0x' + cur) : parseInt(cur)) * 16,
+              (isNaN(parseInt(cur)) ? parseInt('0x' + cur) : parseInt(cur)) * 16, // check for hex digit
               0,
               16,
               16,
@@ -411,13 +395,13 @@ var RPG_TEST = (function () {
             );
           }
         }
-        if (mouse.x > gameSettings.width - 100) offset += ms / 2;
-        if (mouse.x < 100 && offset > 0) offset -= ms / 2;
+        if (mouse.x > gameSettings.width - 100) offset += ms / 2; // <-- frame interval used to get same move speed on any monitor refresh rate (rpg-test esports gaming team with 300hz monitors soon??)
+        if (mouse.x < 100 && offset > 0) offset -= ms / 2; // same frame interval method as above ^^^
         if (offset < 0) offset = 0;
       };
     })();
 
-    var title = (function () {
+    var title = (function () { // title screen
       var buttons = {
         begin: new CButton({
           text: 'New Game',
@@ -473,7 +457,7 @@ var RPG_TEST = (function () {
       };
     })();
 
-    var credits = (function () {
+    var credits = (function () { // credits screen
       var buttons = {
         back: new CButton({
           text: 'Return to menu',
@@ -543,10 +527,10 @@ var RPG_TEST = (function () {
       };
     })();
 
-    var newGame = (function () {
+    var newGame = (function () { // team creation screen
       var selectedMember = 1;
       var selectedClass;
-      var checklist = [false, false, false, false];
+      var checklist = [false, false, false, false]; // bool array for checking if each team member has been selected a class
       var buttons = {
         members: {
           m1: new CButton({
@@ -681,7 +665,7 @@ var RPG_TEST = (function () {
           y: gameSettings.height - 40,
           height: 36,
           run: function () {
-            if (checklist.every(Boolean)) STATE = 'map';
+            if (checklist.every(Boolean)) STATE = 'map'; // will only continue if all team members have been selected a class
           }
         })
       };
@@ -692,22 +676,8 @@ var RPG_TEST = (function () {
       };
 
       return function () {
-        drawText({
-          text: 'New Game',
-          color: 14,
-          size: 54,
-          x: gameSettings.width / 2,
-          y: 80,
-          center: true
-        });
-        drawText({
-          text: 'Create your team:',
-          color: 14,
-          size: 20,
-          x: gameSettings.width / 2,
-          y: 120,
-          center: true
-        });
+        drawText({ text: 'New Game', color: 14, size: 54, x: gameSettings.width / 2, y: 80, center: true });
+        drawText({ text: 'Create your team:', color: 14, size: 20, x: gameSettings.width / 2, y: 120, center: true });
 
         for (var b in buttons.members) {
           var cur = buttons.members[b];
@@ -728,17 +698,11 @@ var RPG_TEST = (function () {
           var classNumber = parseInt(b.slice(-1));
 
           cur.borderColor = classNumber === selectedClass ? 2 : 20;
-          drawText({
-            text: classList[classNumber - 1],
-            size: 16,
-            x: cur.x,
-            y: cur.y + 50,
-            center: true
-          });
+          drawText({ text: classList[classNumber - 1], size: 16, x: cur.x, y: cur.y + 50, center: true });
           cur.draw();
-          stage.drawImage(sprites.itemDrops, (classNumber + 1) * 8, 0, 8, 8, cur.x - 16, cur.y - 16, 32, 32);
+          stage.drawImage(sprites.itemDrops, (classNumber + 1) * 8, 0, 8, 8, cur.x - 16, cur.y - 16, 32, 32); // draw class's weapon drop icon on top of button
         }
-        buttons.begin.color = checklist.every(Boolean) ? 10 : 1;
+        buttons.begin.color = checklist.every(Boolean) ? 10 : 1; // turns green when all team members have been selected a class
         buttons.back.draw();
         buttons.begin.draw();
       };
@@ -748,12 +712,12 @@ var RPG_TEST = (function () {
     var fps;
     var ms;
     return function (delta) {
-      ms = delta - lastDelta;
-      fps = Math.floor(1000 / ms);
-      stage.clearRect(0, 0, gameSettings.width, gameSettings.height);
+      ms = delta - lastDelta; // calculate frame interval
+      fps = Math.floor(1000 / ms); // not actually fps, just frame interval converted into screen refresh rate
+      stage.clearRect(0, 0, gameSettings.width, gameSettings.height); // clear screen
       mouseBounds();
 
-      switch (STATE) {
+      switch (STATE) { // run functions based on game state
         case 'title':
           level(0);
           title();
@@ -770,24 +734,27 @@ var RPG_TEST = (function () {
           map(mapData);
           break;
         default:
-          invalidState();
+          invalidState(); // if current state does not exist...
       }
 
       drawText({ text: 'FPS: ' + fps, x: 0, y: 20 });
       /*drawText({ text: 'MS: ' + ms, x: 0, y: 40 });*/
       lastDelta = delta;
-      requestAnimationFrame(gameLoop);
+      requestAnimationFrame(gameLoop); // and again and again and again and again and again and again...
     };
   })();
 
   return {
-    go: function () {
+    go: function () { // called once document body loads
       init();
       document.body.appendChild(canvas);
       requestAnimationFrame(gameLoop);
     }
   };
 })();
+
+
+// misc functions
 
 function randomInt(max) {
   return Math.floor(Math.random() * max);
