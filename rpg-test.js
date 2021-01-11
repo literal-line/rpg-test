@@ -29,14 +29,9 @@ var RPG_TEST = (function () {
 		});
 		canvas.addEventListener('mousedown', function () {
 			mouse.down = true;
-		});
-		canvas.addEventListener('touchstart', function () {
-			mouse.down = true;
+			mouseClick();
 		});
 		canvas.addEventListener('mouseup', function () {
-			mouse.down = false;
-		});
-		canvas.addEventListener('touchend', function () {
 			mouse.down = false;
 		});
 		addEventListener('blur', function () {
@@ -44,10 +39,16 @@ var RPG_TEST = (function () {
 		});
 	};
 
+	var mouseClick = function() {
+		mouse.click = true;
+		setTimeout(function() { mouse.click = false; }, 1);
+	}
+
 	var mouse = {
 		x: 0,
 		y: 0,
-		down: false
+		down: false,
+		click: false
 	};
 
 	var assets = {
@@ -165,9 +166,8 @@ var RPG_TEST = (function () {
 			if (mx >= x - width / 2 && mx <= x + width / 2 && my >= y - height / 2 && my <= y + height / 2) {
 				stage.fillStyle = hexToRgba(colors[2], 0.25);
 				stage.fillRect(x - width / 2, y - height / 2, width, height);
-				if (mouse.down) {
+				if (mouse.click) {
 					click.play();
-					mouse.down = false;
 					this.run();
 				}
 			}
