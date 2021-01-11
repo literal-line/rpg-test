@@ -42,7 +42,7 @@ var RPG_TEST = (function () {
     mouse.click = true;
     setTimeout(function () {
       mouse.click = false;
-    }, 1);
+    }, 10);
   };
 
   var mouse = {
