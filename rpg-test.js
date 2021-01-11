@@ -201,10 +201,7 @@ var RPG_TEST = (function () {
   })();
 
   var gameLoop = (function () {
-    var state = 'title';
-    var lastDelta = 0;
-    var fps;
-    var ms;
+    var STATE = 'title';
 
     var teamData = {
       member1: { class: 'Member 1' }, // this is placeholder for the newGame screen
@@ -280,7 +277,7 @@ var RPG_TEST = (function () {
         center: true
       });
       drawText({
-        text: 'REQUESTED STATE "' + state + '"',
+        text: 'REQUESTED STATE "' + STATE + '"',
         color: 2,
         x: gameSettings.width / 2,
         y: gameSettings.height / 2 + 40,
@@ -437,7 +434,7 @@ var RPG_TEST = (function () {
           width: 235,
           height: 36,
           run: function () {
-            state = 'newGame';
+            STATE = 'newGame';
           }
         }),
         credits: new CButton({
@@ -447,7 +444,7 @@ var RPG_TEST = (function () {
           width: 235,
           height: 36,
           run: function () {
-            state = 'credits';
+            STATE = 'credits';
           }
         }),
         website: new CButton({
@@ -499,7 +496,7 @@ var RPG_TEST = (function () {
           width: 250,
           height: 36,
           run: function () {
-            state = 'title';
+            STATE = 'title';
           }
         }),
         sr: new CButton({
@@ -689,7 +686,7 @@ var RPG_TEST = (function () {
             teamData.member2.class = 'Member 2';
             teamData.member3.class = 'Member 3';
             teamData.member4.class = 'Member 4';
-            state = 'title';
+            STATE = 'title';
           }
         }),
         begin: new CButton({
@@ -698,7 +695,7 @@ var RPG_TEST = (function () {
           y: gameSettings.height - 40,
           height: 36,
           run: function () {
-            if (checklist.every(Boolean)) state = 'map';
+            if (checklist.every(Boolean)) STATE = 'map';
           }
         })
       };
@@ -772,12 +769,15 @@ var RPG_TEST = (function () {
       };
     })();
 
+    var lastDelta = 0;
+    var fps;
+    var ms;
     return function (delta) {
       ms = delta - lastDelta;
       fps = Math.floor(1000 / ms);
       stage.clearRect(0, 0, gameSettings.width, gameSettings.height);
 
-      switch (state) {
+      switch (STATE) {
         case 'title':
           level(0);
           title();
