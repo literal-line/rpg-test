@@ -330,31 +330,7 @@ var RPG_TEST = (function () {
       };
 
       Stickman.prototype.doPhysics = function () {
-        var joints = this.joints;
-        joints.shoulders.x = mouse.x - 10;
-        joints.shoulders.y = mouse.y - 10;
-
-        joints.handRight.rot += 0.01;
-
-        joints.elbowRight.x = joints.shoulders.x + 5 * Math.cos(joints.elbowRight.rot);
-        joints.elbowRight.y = joints.shoulders.y + 5 * Math.sin(joints.elbowRight.rot);
-        joints.elbowLeft.x = joints.shoulders.x - 5 * Math.cos(joints.elbowLeft.rot);
-        joints.elbowLeft.y = joints.shoulders.y + 5 * Math.sin(joints.elbowLeft.rot);
-        joints.handRight.x = joints.elbowRight.x + 5 * Math.cos(joints.handRight.rot);
-        joints.handRight.y = joints.elbowRight.y + 5 * Math.sin(joints.handRight.rot);
-        joints.handLeft.x = joints.elbowLeft.x - 5 * Math.cos(joints.handLeft.rot);
-        joints.handLeft.y = joints.elbowLeft.y - 5 * Math.sin(joints.handLeft.rot);
-        joints.hips.x = joints.shoulders.x; // + 0 * Math.cos(joints.hips.rot);
-        joints.hips.y = joints.shoulders.y + 10; // * Math.sin(joints.hips.rot);
-        joints.kneeRight.x = joints.hips.x + 5 * Math.cos(joints.kneeRight.rot);
-        joints.kneeRight.y = joints.hips.y + 5 * Math.sin(joints.kneeRight.rot);
-        joints.kneeLeft.x = joints.hips.x - 5 * Math.cos(joints.kneeLeft.rot);
-        joints.kneeLeft.y = joints.hips.y + 5 * Math.sin(joints.kneeLeft.rot);
-        joints.footRight.x = joints.kneeRight.x + 5 * Math.cos(joints.footRight.rot);
-        joints.footRight.y = joints.kneeRight.y + 5 * Math.sin(joints.footRight.rot);
-        joints.footLeft.x = joints.kneeLeft.x - 5 * Math.cos(joints.footLeft.rot);
-        joints.footLeft.y = joints.kneeLeft.y + 5 * Math.sin(joints.footLeft.rot);
-        console.log(Math.cos(joints.handRight.rot));
+        // bruh
       };
 
       Stickman.prototype.draw = function () {
