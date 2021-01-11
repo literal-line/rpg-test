@@ -68,7 +68,7 @@ var RPG_TEST = (function () {
   };
 
   var audio = {
-    click: new Audio(assets.soundClick)
+    click: newWav(assets.soundClick)
   };
 
   var colors = [ // color pallete for text. idk why im using this, just want consistent colors i guess...
@@ -764,6 +764,12 @@ function newImage(src) {
   var img = document.createElement('img');
   img.src = src;
   return img;
+}
+
+function newWav(src) {
+  var audio = new Audio(src);
+  audio.setAttribute('type', 'audio/x-wav');
+  return audio;
 }
 
 function hexToRgba(hex, opacity) {
