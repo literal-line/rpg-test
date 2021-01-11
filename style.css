@@ -19,6 +19,7 @@ canvas {
 	/*border: 1px solid #FFFFFF;*/
 	/*cursor: url('./assets/cursor.png'), auto;*/
 	image-rendering: pixelated;
+	image-rendering: -moz-crisp-edges;
 }
 
 #preload {
