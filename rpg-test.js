@@ -388,8 +388,8 @@ var RPG_TEST = (function () {
             );
           }
         }
-        if (mouse.x > gameSettings.width - 175 && mouse.x < gameSettings.width && mouse.y > 0 && mouse.y < gameSettings.height) offset += ms / 2; // <-- frame interval used to get same move speed on any monitor refresh rate (rpg-test esports gaming team with 300hz monitors soon??)
-        if (mouse.x < 175 && mouse.x > 0 && offset > 0 && mouse.y > 0 && mouse.y < gameSettings.height) offset -= ms / 2; // same frame interval method as above ^^^
+        if (mouse.x > gameSettings.width - 175 && mouse.x < gameSettings.width && mouse.y > 0 && mouse.y < vertical * 16) offset += ms / 2; // <-- frame interval used to get same move speed on any monitor refresh rate (rpg-test esports gaming team with 300hz monitors soon??)
+        if (mouse.x < 175 && mouse.x > 0 && offset > 0 && mouse.y > 0 && mouse.y < vertical * 16) offset -= ms / 2; // same frame interval method as above ^^^
         if (offset < 0) offset = 0;
         if (offset > offsetLimit) offset = offsetLimit;
 
