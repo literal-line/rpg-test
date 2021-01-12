@@ -7,8 +7,8 @@ var RPG_TEST = (function () {
   var canvas = document.createElement('canvas');
   var stage = canvas.getContext('2d');
   var gameSettings = {
-    version: 'v0.1-20210111-924est',
-    authors: ['Literal Line'], // incase you mod or whatever
+    version: 'v0.1-20210111-2032est',
+    authors: ['Literal Line'], // in case you mod or whatever
     width: 768,
     height: 432,
     widthCSS: '768px',
@@ -211,23 +211,23 @@ var RPG_TEST = (function () {
     };
 
     var mapData = [ // big chunky soup
-      'DDDDDD45A000000000000000000076000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-      'DDDDDDDD45A00000000000000000B0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-      'DDDDDDDDDD4555A000000000000760000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-      'DDDDDDD122C000455A000000000B00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-      'DDDD122C000000000455A000007600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-      'DDD1C0000000000000004555556000000000000000000000000000000000000000000005555000000000000000000000000000000000000000000000000000000000000000000000',
-      'D12C00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-      'DB0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-      'DB0000000000000000000000000000000000000000005555550000000000000000000000000000000000000000000000000005555500000000000000000000000000000000000000',
-      '22223000000000000000075A000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-      '0000930000000000000008DB000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-      '00000B0000000000000008D4A00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-      '5555560000000000000008DDB00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-      '0000000000000000000076DD455550000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-      '000000000000000075556DDDDD0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-      '0007555555A007556DDDDDDDDDDD00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-      '5556DDDDDD4556DDDDDDDDDDDDDDDDD00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
+      'dddddd45a000000004a0000000b076ddddddddddddddddddddddddddddd800000000000000000000000000000000000000000000000000000000000000000000000000000000000b',
+      'dddddddd45a0000000455a000760bdddddddddddddddddddddddddddddd800000000000000000000000000000000000000000000000000000000000000000000000000000000000b',
+      'dddddddddd4555a00000045556076ddddddd12223dddd122223ddddddddb00000000000000000000000000000000000000000000000000000000000000000000000000000000000b',
+      'ddddddd122c000455a000000000bddddd122c00092222c00009223dddddb00000000000000000000000000000000000000000hh00000hh000000000000000000000000000000000b',
+      'dddd122c000000000455a0000076dddd1c000000000000000000093ddddb000075555a0000000000000000000000000000000hh00000hh000000000000000000000000000000000b',
+      'ddd1c0000000000000004555556dddd1c00000000000000000000092222c00008ddddb0000000000000000000000000000000000000000000000000000000000000000000000000b',
+      'd12c000000000000000008dddddddd1c000000000000000000000000000000008ddddb075500000000000000000000000000h000000000h00000000000000000000000000000000b',
+      'db00000000000000000008ddddddddb0000000000000000000000075555a00008ddddb767500000000000000000000000000h000000000h00000000000000000000000000000000b',
+      'db000000000000000000092223ddddb000000000000000000000008ddddb00008jjjj4676d000000000000000000000000000h0000000h000000000000000000000000000000000b',
+      '2222300000000000000000000923d1c000045a00000000000000008ddddb00008jjjj456dd0000000000000000000000000000hhhhhhh0000000000000000000000000000000000b',
+      '00009300000000000000075a00092c00000004555555555555a0076ddddb00076jjjjddddd000000000000000000000000000000000000000000000000000000000000000000000b',
+      '00000b0000000000000008d4a000000000000000000000000045560jjjj45556ijjjjfdddd000000000000000000000000000000000000000000000000000000000000000000000b',
+      '5555560000000000000008dd45a0000000000000000000000000007jjjj55556dififddddd0000000000000000000000bbb000bbb000bbb000bbb00000000000000000000000000b',
+      '0000000000000000000076dddd45555300000000000000000000008fifiddddddddddddddd0000000000000000000000b00000b0b000b0b000b0b00000000000000000000000000b',
+      '000000000000000075556dddddddddd455a00000755a00000000009222223ddddddddddddd0000000000000000000000bbb000b0b000b0b000b0b00000000000000000000000000b',
+      '0007555555a007556ddddddddddddddddd4a00076dd455555a007a0000008ddddddddddddd000000000000000000000000b000b0b000b0b000b0b00000000000000000000000000b',
+      '5556dddddd4556ddddddddddddddddddddd45556ddddddddd455645555556ddddddddddddd0000000000000000000000bbb000bbb000bbb000b0b00000000000000000000000000b'
     ];
 
     var levelMaps = { // different maps
@@ -273,13 +273,6 @@ var RPG_TEST = (function () {
         multiple: false // will pick random map if set to true (intended for actual levels later on...)
       }
     ];
-
-    var mouseBounds = function () { // mouse pos will stick to canvas border when out of bounds
-      if (mouse.x < 0) mouse.x = 0;
-      if (mouse.x > gameSettings.width) mouse.x = gameSettings.width;
-      if (mouse.y < 0) mouse.y = 0;
-      if (mouse.y > gameSettings.height) mouse.y = gameSettings.height;
-    };
 
     var invalidState = function () { // if current game state has no case in switch statement
       drawText({ text: 'ERROR:', size: 48, color: 2, x: gameSettings.width / 2, y: gameSettings.height / 2, center: true });
@@ -375,16 +368,16 @@ var RPG_TEST = (function () {
       var horizontal = Math.floor(gameSettings.width / 16) + 1;
       var vertical = Math.floor(gameSettings.height / 16) - 10;
       var offset = 0;
-      var offset2 = 0;
       var tileset = tilesets.map;
-
+      
       return function (mapData) {
+        var offsetLimit = mapData[0].length * 16 - gameSettings.width;
         for (var y = 0; y < vertical; y++) {
           for (var x = 0; x < horizontal; x++) {
             var cur = mapData[y].charAt(x + Math.floor(offset / 16));
             stage.drawImage(
               tileset,
-              (isNaN(parseInt(cur)) ? parseInt('0x' + cur) : parseInt(cur)) * 16, // check for hex digit
+              (isNaN(parseInt(cur)) ? convertBase(cur, 36, 10) : parseInt(cur)) * 16, // check for non-decimal digit
               0,
               16,
               16,
@@ -395,9 +388,13 @@ var RPG_TEST = (function () {
             );
           }
         }
-        if (mouse.x > gameSettings.width - 100) offset += ms / 2; // <-- frame interval used to get same move speed on any monitor refresh rate (rpg-test esports gaming team with 300hz monitors soon??)
-        if (mouse.x < 100 && offset > 0) offset -= ms / 2; // same frame interval method as above ^^^
+        if (mouse.x > gameSettings.width - 175 && mouse.x < gameSettings.width && mouse.y > 0 && mouse.y < gameSettings.height) offset += ms / 2; // <-- frame interval used to get same move speed on any monitor refresh rate (rpg-test esports gaming team with 300hz monitors soon??)
+        if (mouse.x < 175 && mouse.x > 0 && offset > 0 && mouse.y > 0 && mouse.y < gameSettings.height) offset -= ms / 2; // same frame interval method as above ^^^
         if (offset < 0) offset = 0;
+        if (offset > offsetLimit) offset = offsetLimit;
+
+        drawText({ text: (offset === 0 ? '' : '<<'), x: 20, y: gameSettings.height / 4, center: true}); // left/right scroll indicators
+        drawText({ text: (offset === offsetLimit ? '' : '>>'), x: gameSettings.width - 20, y: gameSettings.height / 4, center: true});
       };
     })();
 
@@ -715,7 +712,6 @@ var RPG_TEST = (function () {
       ms = delta - lastDelta; // calculate frame interval
       fps = Math.floor(1000 / ms); // not actually fps, just frame interval converted into screen refresh rate
       stage.clearRect(0, 0, gameSettings.width, gameSettings.height); // clear screen
-      mouseBounds();
 
       switch (STATE) { // run functions based on game state
         case 'title':
@@ -758,6 +754,28 @@ var RPG_TEST = (function () {
 
 function randomInt(max) {
   return Math.floor(Math.random() * max);
+}
+
+String.prototype.replaceAt = function(index, replacement) {
+  return this.substr(0, index) + replacement + this.substr(index + replacement.length);
+}
+
+function convertBase(value, from_base, to_base) {
+  var range = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+/'.split('');
+  var from_range = range.slice(0, from_base);
+  var to_range = range.slice(0, to_base);
+  
+  var dec_value = value.split('').reverse().reduce(function (carry, digit, index) {
+    if (from_range.indexOf(digit) === -1) throw new Error('Invalid digit `'+digit+'` for base '+from_base+'.');
+    return carry += from_range.indexOf(digit) * (Math.pow(from_base, index));
+  }, 0);
+  
+  var new_value = '';
+  while (dec_value > 0) {
+    new_value = to_range[dec_value % to_base] + new_value;
+    dec_value = (dec_value - (dec_value % to_base)) / to_base;
+  }
+  return new_value || '0';
 }
 
 function newImage(src) {
