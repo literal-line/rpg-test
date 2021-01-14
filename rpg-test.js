@@ -109,7 +109,7 @@ var RPG_TEST = (function () {
 
   var init = function () {
     console.log('rpg-test ' + gameSettings.version);
-    console.log('Authors: ' + gameSettings.authors);
+    console.log('authors: ' + gameSettings.authors);
     canvas.width = gameSettings.width;
     canvas.height = gameSettings.height;
     canvas.style.width = gameSettings.widthCSS;
