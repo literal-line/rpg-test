@@ -58,6 +58,7 @@ var RPG_TEST = (function () {
     tilesetMap: './assets/tilesetMap.png',
     tilesetMapIcons: './assets/tilesetMapIcons.png',
     tilesetGrass: './assets/tilesetGrass.png',
+    weaponsAssassin: './assets/weaponsAssassin.png',
     soundClick: './assets/click.wav'
   };
 
@@ -66,7 +67,8 @@ var RPG_TEST = (function () {
     itemDrops: newImage(assets.itemDrops),
     tilesetMap: newImage(assets.tilesetMap),
     tilesetMapIcons: newImage(assets.tilesetMapIcons),
-    tilesetGrass: newImage(assets.tilesetGrass)
+    tilesetGrass: newImage(assets.tilesetGrass),
+    weaponsAssassin: newImage(assets.weaponsAssassin)
   };
 
   var audio = {
@@ -153,6 +155,7 @@ var RPG_TEST = (function () {
     this.height = obj.height || 75;
     this.borderColor = obj.borderColor || 1;
     this.bgColor = obj.bgColor || 8;
+    this.bgHoverColor = obj.bgHoverColor || 2;
     this.border = obj.border;
     this.run = obj.run; // <-- will call this function when clicked
   };
@@ -176,7 +179,7 @@ var RPG_TEST = (function () {
       stage.fillRect(x - width / 2, y - height / 2, width, height);
 
       if (mx >= x - width / 2 && mx <= x + width / 2 && my >= y - height / 2 && my <= y + height / 2) {
-        stage.fillStyle = hexToRgba(colors[2], 0.25);
+        stage.fillStyle = hexToRgba(colors[this.bgHoverColor], 0.25);
         stage.fillRect(x - width / 2, y - height / 2, width, height);
         if (mouse.click) {
           audio.click.play();
@@ -196,7 +199,7 @@ var RPG_TEST = (function () {
   })();
 
   var gameLoop = (function () {
-    var STATE = 'title'; // keeps track of game state. which functions run during which state is determined by a switch statement at the end of this IIFE
+    var STATE = 'map'; // keeps track of game state. which functions run during which state is determined by a switch statement at the end of this IIFE
 
     var teamData = { // data for each stickman (will change later)
       member1: { class: 'Member 1' }, //  placeholder classes for the newGame screen
@@ -299,6 +302,28 @@ var RPG_TEST = (function () {
       }
     ];
 
+    var weapons = {
+        daggerStarter0: { name: 'Butter Knife', lvl: 0, class: 'Assassin', type: 'Physical', imageColumn: 0 },
+        daggerPhysical1: { name: 'Stone Knife', lvl: 1, class: 'Assassin', type: 'Physical', imageColumn: 0 },
+        daggerBurn1: { name: 'Glowing Knife', lvl: 1, class: 'Assassin', type: 'Burn', imageColumn: 1 },
+        daggerShock1: { name: 'Electric Knife', lvl: 1, class: 'Assassin', type: 'Shock', imageColumn: 2 },
+        daggerFreeze1: { name: 'Frozen Knife', lvl: 1, class: 'Assassin', type: 'Freeze', imageColumn: 3 },
+        daggerPoison1: { name: 'Poison Knife', lvl: 1, class: 'Assassin', type: 'Poison', imageColumn: 4 }
+    };
+
+    var inventoryData = {
+        m1: { weapon: 0, acc1: 0, acc2: 0 },
+        m2: { weapon: 0, acc1: 0, acc2: 0 },
+        m3: { weapon: 0, acc1: 0, acc2: 0 },
+        m4: { weapon: 0, acc1: 0, acc2: 0 },
+        backpack: [
+            weapons.daggerStarter0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0,
+            0, 0, 0, weapons.daggerFreeze1, 0, 0,
+            0, 0, 0, 0, 0, 0
+        ]
+    };
+
     var invalidState = function () { // if current game state has no case in switch statement
       drawText({ text: 'ERROR:', size: 48, color: 2, x: gameSettings.width / 2, y: gameSettings.height / 2, center: true });
       drawText({ text: 'REQUESTED STATE "' + STATE + '"', color: 2, x: gameSettings.width / 2, y: gameSettings.height / 2 + 40, center: true });
@@ -307,7 +332,7 @@ var RPG_TEST = (function () {
     };
 
     var level = (function () { // draw level and eventually draw stickmen once i figure out the physics
-      var Stickman = function (obj) {
+      /*var Stickman = function (obj) {
         this.joints = {
           shoulders: { x: 0, y: 0 },
           elbowRight: { x: 0, y: 0, rot: 0 },
@@ -352,7 +377,7 @@ var RPG_TEST = (function () {
 
       var stickmen = {
         stickman1: new Stickman() // he has no friends
-      };
+      };*/
 
       var renderLevel = function (level) { // draw the level using data from an array
         level = levelData[level];
@@ -376,12 +401,12 @@ var RPG_TEST = (function () {
         }
       };
 
-      var renderStickmen = function () {
+      /*var renderStickmen = function () {
         for (var s in stickmen) {
           stickmen[s].doPhysics();
           stickmen[s].draw();
         }
-      };
+      };*/
 
       return function (level) {
         renderLevel(level);
@@ -425,6 +450,43 @@ var RPG_TEST = (function () {
         drawText({ text: (offset === 0 ? '' : '<<'), x: 20, y: gameSettings.height / 4, center: true }); // left/right scroll indicators
         drawText({ text: (offset === offsetLimit ? '' : '>>'), x: gameSettings.width - 20, y: gameSettings.height / 4, center: true });
       }
+    })();
+
+    var inventoryBar = (function() { // unfinished crap
+        var buttons = {
+            backpack: []
+        };
+
+        var drawBackpack = function() {
+            stage.fillStyle = colors[13];
+            stage.fillRect(0, gameSettings.height - 160, gameSettings.width, 160);
+            for (var i = 0; i < buttons.backpack.length; i++) {
+                var currentSlot = buttons.backpack[i];
+                var currentItem = inventoryData.backpack[i];
+                var currentSpritesheet = sprites['weapons' + currentItem.class];
+                currentSlot.draw();
+                if (currentSpritesheet) stage.drawImage(currentSpritesheet, currentItem.imageColumn * 24, currentItem.lvl * 24, 24, 24, currentSlot.x - 12, currentSlot.y - 12, 24, 24);
+            }
+        };
+
+        for (var y = 0; y < 4; y++) {
+            for (var x = 0; x < 6; x++) {
+                buttons.backpack.push(new CButton({
+                    x: gameSettings.width - 220 + x * 40,
+                    y: gameSettings.height - 140 + y * 40,
+                    width: 35,
+                    height: 35,
+                    border: false,
+                    run: function () {
+                        //
+                    }
+                }));
+            }
+        }
+
+        return function() {
+            drawBackpack();
+        }
     })();
 
     var title = (function () { // title screen
@@ -757,6 +819,7 @@ var RPG_TEST = (function () {
           break;
         case 'map':
           map(mapData);
+          inventoryBar();
           break;
         default:
           invalidState(); // if current state does not exist...
