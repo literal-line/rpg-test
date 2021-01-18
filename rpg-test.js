@@ -401,7 +401,7 @@ var RPG_TEST = (function () {
       var scrollLeft = 125;
       
       return function (mapData) {
-        var offsetLimit = mapData.length * 16 - gameSettings.width;
+        var offsetLimit = mapData.width * 16 - gameSettings.width;
         var bgTiles = mapData.bg;
         var fgTiles = mapData.fg;
         
