@@ -7,7 +7,7 @@ var RPG_TEST = (function () {
   var canvas = document.createElement('canvas');
   var stage = canvas.getContext('2d');
   var gameSettings = {
-    version: 'v0.1-20210118-0414st',
+    version: 'v0.1-20210121-2029est',
     authors: ['Literal Line'], // in case you mod or whatever
     width: 768,
     height: 432,
@@ -26,16 +26,29 @@ var RPG_TEST = (function () {
     canvas.addEventListener('contextmenu', function (e) {
       e.preventDefault();
     });
-    canvas.addEventListener('mousedown', function () {
-      mouse.down = true;
-      mouseClick();
+    canvas.addEventListener('mousedown', function (e) {
+      if (e.button === 0) {
+        mouse.down = true;
+        mouseClick();
+      }
     });
-    canvas.addEventListener('mouseup', function () {
-      mouse.down = false;
+    canvas.addEventListener('mouseup', function (e) {
+      if (e.button === 0) mouse.down = false;
     });
     canvas.addEventListener('mouseleave', function () {
       mouse.down = false;
     });
+  };
+
+  var setupCanvas = function() {
+    canvas.width = gameSettings.width;
+    canvas.height = gameSettings.height;
+    canvas.style.width = gameSettings.widthCSS;
+    canvas.style.height = gameSettings.heightCSS;
+    canvas.style.background = gameSettings.bg;
+    canvas.style.imageRendering = gameSettings.aa ? 'auto' : 'pixelated';
+    canvas.style.imageRendering = gameSettings.aa ? 'auto' : '-moz-crisp-edges';
+    stage.imageSmoothingEnabled = gameSettings.aa;
   };
 
   var mouseClick = function () { // prevents buttons from being clicked when click-dragging
@@ -58,7 +71,8 @@ var RPG_TEST = (function () {
     tilesetMap: './assets/tilesetMap.png',
     tilesetMapIcons: './assets/tilesetMapIcons.png',
     tilesetGrass: './assets/tilesetGrass.png',
-    weaponsAssassin: './assets/weaponsAssassin.png',
+    weaponAssassin: './assets/weaponAssassin.png',
+    accessory: './assets/accessory.png',
     soundClick: './assets/click.wav'
   };
 
@@ -68,7 +82,8 @@ var RPG_TEST = (function () {
     tilesetMap: newImage(assets.tilesetMap),
     tilesetMapIcons: newImage(assets.tilesetMapIcons),
     tilesetGrass: newImage(assets.tilesetGrass),
-    weaponsAssassin: newImage(assets.weaponsAssassin)
+    weaponAssassin: newImage(assets.weaponAssassin),
+    accessory: newImage(assets.accessory)
   };
 
   var audio = {
@@ -86,7 +101,7 @@ var RPG_TEST = (function () {
     '#73392e',
     '#34111f',
     '#000000',
-    '#273b2d',
+    '#375340',
     '#458239',
     '#9cb93b',
     '#ffd832',
@@ -114,13 +129,8 @@ var RPG_TEST = (function () {
   var init = function () {
     console.log('rpg-test ' + gameSettings.version);
     console.log('authors: ' + gameSettings.authors);
-    canvas.width = gameSettings.width;
-    canvas.height = gameSettings.height;
-    canvas.style.width = gameSettings.widthCSS;
-    canvas.style.height = gameSettings.heightCSS;
-    canvas.style.background = gameSettings.bg;
-    stage.imageSmoothingEnabled = gameSettings.aa;
     setupEventListeners();
+    setupCanvas();
   };
 
   var getMousePos = function (c, e) { // gets mouse pos on canvas by taking actual canvas position on document into account
@@ -142,7 +152,10 @@ var RPG_TEST = (function () {
 
   var drawText = function (obj) { // more uniform way of drawing text
     stage.fillStyle = colors[obj.color || 20];
+    stage.strokeStyle = colors[obj.outlineColor || 8];
+    stage.lineWidth = obj.outlineWidth || 2;
     stage.font = (obj.size || 24) + 'px Zelda DX';
+    if (obj.outline) stage.strokeText(obj.text, obj.center ? obj.x - stage.measureText(obj.text).width / 2 : obj.x, obj.y);
     stage.fillText(obj.text, obj.center ? obj.x - stage.measureText(obj.text).width / 2 : obj.x, obj.y);
   };
 
@@ -157,7 +170,9 @@ var RPG_TEST = (function () {
     this.bgColor = obj.bgColor || 8;
     this.bgHoverColor = obj.bgHoverColor || 2;
     this.border = obj.border;
-    this.run = obj.run; // <-- will call this function when clicked
+    this.hover = obj.hover; // <-- will call this function on hover
+    this.click = obj.click; // <-- will call this function on click
+    this.id = obj.id;
   };
 
   CButton.prototype.draw = (function () { // draw proto (might change name later...)
@@ -181,10 +196,11 @@ var RPG_TEST = (function () {
       if (mx >= x - width / 2 && mx <= x + width / 2 && my >= y - height / 2 && my <= y + height / 2) {
         stage.fillStyle = hexToRgba(colors[this.bgHoverColor], 0.25);
         stage.fillRect(x - width / 2, y - height / 2, width, height);
+        if (this.hover) this.hover();
         if (mouse.click) {
           audio.click.play();
           mouse.click = false;
-          this.run();
+          this.click();
         }
       }
       if (this.text)
@@ -199,13 +215,13 @@ var RPG_TEST = (function () {
   })();
 
   var gameLoop = (function () {
-    var STATE = 'title'; // keeps track of game state. which functions run during which state is determined by a switch statement at the end of this IIFE
+    var STATE = 'map'; // keeps track of game state. which functions run during which state is determined by a switch statement at the end of this IIFE
 
     var teamData = { // data for each stickman (will change later)
-      member1: { class: 'Member 1' }, //  placeholder classes for the newGame screen
-      member2: { class: 'Member 2' },
-      member3: { class: 'Member 3' },
-      member4: { class: 'Member 4' }
+      member1: { class: 'Member 1', weapon: '', acc1: '', acc2: '' }, //  placeholder classes for the newGame screen
+      member2: { class: 'Member 2', weapon: '', acc1: '', acc2: '' },
+      member3: { class: 'Member 3', weapon: '', acc1: '', acc2: '' },
+      member4: { class: 'Member 4', weapon: '', acc1: '', acc2: '' }
     };
 
     var classList = ['Assassin', 'Ninja', 'Nunchaku-ka', 'Monk', 'Mage', 'Gunner']; // this array seems to be working ok for now...
@@ -302,26 +318,36 @@ var RPG_TEST = (function () {
       }
     ];
 
-    var weapons = {
-        daggerStarter0: { name: 'Butter Knife', lvl: 0, class: 'Assassin', type: 'Physical', imageColumn: 0 },
-        daggerPhysical1: { name: 'Stone Knife', lvl: 1, class: 'Assassin', type: 'Physical', imageColumn: 0 },
-        daggerBurn1: { name: 'Glowing Knife', lvl: 1, class: 'Assassin', type: 'Burn', imageColumn: 1 },
-        daggerShock1: { name: 'Electric Knife', lvl: 1, class: 'Assassin', type: 'Shock', imageColumn: 2 },
-        daggerFreeze1: { name: 'Frozen Knife', lvl: 1, class: 'Assassin', type: 'Freeze', imageColumn: 3 },
-        daggerPoison1: { name: 'Poison Knife', lvl: 1, class: 'Assassin', type: 'Poison', imageColumn: 4 }
+    var items = { // all items
+      daggerStarter0: { name: 'Butter Knife', type: 'weapon', lvl: 0, class: 'Assassin', dmgType: 'Physical', attackMin: 1, attackMax: 2, imageColumn: 0 },
+      daggerPhysical1: { name: 'Stone Dagger', type: 'weapon', lvl: 1, class: 'Assassin', dmgType: 'Physical', attackMin: 2, attackMax: 4, imageColumn: 0 },
+      daggerBurn1: { name: 'Glowing Dagger', type: 'weapon', lvl: 1, class: 'Assassin', dmgType: 'Burn', attackMin: 2, attackMax: 3, eAttackMin: 2, eAttackMax: 3, magic: 10, imageColumn: 1 },
+      daggerShock1: { name: 'Electric Dagger', type: 'weapon', lvl: 1, class: 'Assassin', dmgType: 'Shock', attackMin: 2, attackMax: 3, eAttackMin: 1, eAttackMax: 6, magic: 10, imageColumn: 2 },
+      daggerFreeze1: { name: 'Frozen Dagger', type: 'weapon', lvl: 1, class: 'Assassin', dmgType: 'Freeze', attackMin: 2, attackMax: 3, eAttackMin: 3, eAttackMax: 3, magic: 15, imageColumn: 3 },
+      daggerPoison1: { name: 'Poison Dagger', type: 'weapon', lvl: 1, class: 'Assassin', dmgType: 'Poison', attackMin: 2, attackMax: 3, eAttackMin: 1, eAttackMax: 1, magic: 15, imageColumn: 4 },
+      daggerPhysical2: { name: 'Iron Knife', type: 'weapon', lvl: 2, class: 'Assassin', dmgType: 'Physical', attackMin: 8, attackMax: 10, imageColumn: 0 },
+      daggerBurn2: { name: 'Flame Knife', type: 'weapon', lvl: 2, class: 'Assassin', dmgType: 'Burn', attackMin: 5, attackMax: 7, eAttackMin: 5, eAttackMax: 6, magic: 12, imageColumn: 1 },
+      daggerShock2: { name: 'Thunder Knife', type: 'weapon', lvl: 2, class: 'Assassin', dmgType: 'Shock', attackMin: 5, attackMax: 7, eAttackMin: 1, eAttackMax: 15, magic: 12, imageColumn: 2 },
+      daggerFreeze2: { name: 'Ice Knife', type: 'weapon', lvl: 2, class: 'Assassin', dmgType: 'Freeze', attackMin: 5, attackMax: 7, eAttackMin: 8, eAttackMax: 10, magic: 20, imageColumn: 3 },
+      daggerPoison2: { name: 'Toxic Knife', type: 'weapon', lvl: 2, class: 'Assassin', dmgType: 'Poison', attackMin: 5, attackMax: 7, eAttackMin: 1, eAttackMax: 2, magic: 20, imageColumn: 4 },
+      card0: { name: 'Placeholder card', type: 'accessory', lvl: 0, tooltip: ['Nothing. Nothing at', 'all.'], imageColumn: 0 },
+      cardQuick1: { name: 'Quick card', type: 'accessory', lvl: 1, tooltip: 'Attack speed -10%', imageColumn: 0 },
+      cardSniper1: { name: 'Sniper card', type: 'accessory', lvl: 1, tooltip: 'Attack distance +25', imageColumn: 1 },
+      cardOnigiri1: { name: 'Onigiri card', type: 'accessory', lvl: 1, tooltip: 'Onigiri drop +25%', imageColumn: 2 },
+      cardLum1: { name: 'Lum\'s card', type: 'accessory', lvl: 1, tooltip: ['Umeboshi onigiri drop', '+15%'], imageColumn: 3 }
     };
 
     var inventoryData = {
-        m1: { weapon: 0, acc1: 0, acc2: 0 },
-        m2: { weapon: 0, acc1: 0, acc2: 0 },
-        m3: { weapon: 0, acc1: 0, acc2: 0 },
-        m4: { weapon: 0, acc1: 0, acc2: 0 },
-        backpack: [
-            weapons.daggerStarter0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0,
-            0, 0, 0, weapons.daggerFreeze1, 0, 0,
-            0, 0, 0, 0, 0, 0
-        ]
+      m1: { weapon: 0, acc1: 0, acc2: 0 },
+      m2: { weapon: 0, acc1: 0, acc2: 0 },
+      m3: { weapon: 0, acc1: 0, acc2: 0 },
+      m4: { weapon: 0, acc1: 0, acc2: 0 },
+      backpack: [ // array of items in backpack
+        'daggerStarter0', 0, 0, 0, 0, 0,
+        'daggerPhysical1', 'daggerBurn1', 'daggerShock1', 'daggerFreeze1', 'daggerPoison1', 0,
+        'daggerPhysical2', 'daggerBurn2', 'daggerShock2', 'daggerFreeze2', 'daggerPoison2', 0,
+        'card0', 'cardQuick1', 'cardSniper1', 'cardOnigiri1','cardLum1', 0
+      ]
     };
 
     var invalidState = function () { // if current game state has no case in switch statement
@@ -424,12 +450,12 @@ var RPG_TEST = (function () {
       };
       var scrollRight = gameSettings.width - 125;
       var scrollLeft = 125;
-      
+
       return function (mapData) {
         var offsetLimit = mapData.width * 16 - gameSettings.width;
         var bgTiles = mapData.bg;
         var fgTiles = mapData.fg;
-        
+
         for (var y = 0; y < vertical; y++) {
           for (var x = 0; x < horizontal; x++) {
             var curBg = bgTiles[y].charAt(x + Math.floor(offset / 16));
@@ -441,8 +467,8 @@ var RPG_TEST = (function () {
           }
         }
         if (mouse.y > 0 && mouse.y < vertical * 16) { // if within y bounds of map, allow scroll
-          if (mouse.x > scrollRight && mouse.x < gameSettings.width) offset += ms / 8 + (mouse.x - scrollRight) / 20; // <-- frame interval used to get same move speed on any monitor refresh rate (rpg-test esports gaming team with 300hz monitors soon??)
-          if (mouse.x < scrollLeft && mouse.x > 0 && offset > 0) offset -= ms / 8 - (mouse.x - scrollLeft) / 20;
+          if (mouse.x > scrollRight && mouse.x < gameSettings.width) offset += ms * ((mouse.x - scrollRight) / 100); // <-- shit math
+          if (mouse.x < scrollLeft && mouse.x > 0 && offset > 0) offset -= ms * ((scrollLeft - mouse.x) / 100);
         }
         if (offset < 0) offset = 0;
         if (offset > offsetLimit) offset = offsetLimit;
@@ -452,41 +478,125 @@ var RPG_TEST = (function () {
       }
     })();
 
-    var inventoryBar = (function() { // unfinished crap
-        var buttons = {
-            backpack: []
-        };
+    var inventoryBar = (function () { // unfinished crap
+      var buttons = {
+        backpack: []
+      };
 
-        var drawBackpack = function() {
-            stage.fillStyle = colors[13];
-            stage.fillRect(0, gameSettings.height - 160, gameSettings.width, 160);
-            for (var i = 0; i < buttons.backpack.length; i++) {
-                var currentSlot = buttons.backpack[i];
-                var currentItem = inventoryData.backpack[i];
-                var currentSpritesheet = sprites['weapons' + currentItem.class];
-                currentSlot.draw();
-                if (currentSpritesheet) stage.drawImage(currentSpritesheet, currentItem.imageColumn * 24, currentItem.lvl * 24, 24, 24, currentSlot.x - 12, currentSlot.y - 12, 24, 24);
-            }
-        };
+      var info = [];
+      var isHovering = false;
+      var cursorItem = 0;
 
+      var drawBg = function (color) {
+        stage.fillStyle = colors[color];
+        stage.fillRect(0, gameSettings.height - 160, gameSettings.width, 160);
+      };
+
+      var drawCursor = function() {
+        if (cursorItem) {
+          var item = items[cursorItem];
+          var currentSpritesheet = sprites[item.type === 'weapon' ? item.type + item.class : item.type];
+          var imageRow = item.lvl * 24;
+          stage.drawImage(currentSpritesheet, item.imageColumn * 24, imageRow, 24, 24, mouse.x - 12, mouse.y - 12, 24, 24);
+        }
+      };
+
+      var drawInfo = function () {
+        if (isHovering) {
+          for (var i = 0; i < info.length; i++) {
+            drawText({
+              text: info[i],
+              size: (i ? 13 : 16),
+              color: 20,
+              x: gameSettings.width - 475,
+              y: gameSettings.height - 142 + i * 25 + (i ? 5 : 0),
+              outline: true,
+              outlineColor: 8,
+              outlineWidth: 3
+            });
+          }
+        }
+      };
+
+      var drawBackpack = function () {
+        isHovering = false;
+        for (var i = 0; i < buttons.backpack.length; i++) {
+          var currentSlot = buttons.backpack[i];
+          var currentItem = items[inventoryData.backpack[i]];
+          currentSlot.draw();
+          if (currentItem) {
+            var currentSpritesheet = sprites[(currentItem.type === 'weapon' ? currentItem.type + currentItem.class : currentItem.type)];
+            var imageRow = currentItem.lvl * 24;
+            stage.drawImage(currentSpritesheet, currentItem.imageColumn * 24, imageRow, 24, 24, currentSlot.x - 12, currentSlot.y - 12, 24, 24);
+          }
+        }
+      };
+
+      var setupButtons = function () {
+        var i = 0;
         for (var y = 0; y < 4; y++) {
-            for (var x = 0; x < 6; x++) {
-                buttons.backpack.push(new CButton({
-                    x: gameSettings.width - 220 + x * 40,
-                    y: gameSettings.height - 140 + y * 40,
-                    width: 35,
-                    height: 35,
-                    border: false,
-                    run: function () {
-                        //
-                    }
-                }));
-            }
-        }
+          for (var x = 0; x < 6; x++) {
+            buttons.backpack.push(new CButton({
+              x: gameSettings.width - 220 + x * 40,
+              y: gameSettings.height - 140 + y * 40,
+              width: 35,
+              height: 35,
+              border: false,
+              hover: function () {
+                isHovering = true;
+                var item = items[inventoryData.backpack[this.id]];
+                if (item) {
+                  switch(item.type) {
+                    case 'weapon':
+                      info = [
+                        item.name + ' ' + item.lvl,
+                        item.dmgType + ' type ' + item.type,
+                        item.attackMin + '-' + item.attackMax + ' hit dmg'
+                      ];
 
-        return function() {
-            drawBackpack();
+                      if (item.eAttackMin || item.eAttackMax || item.magic) {
+                        info.push(
+                          item.eAttackMin + '-' + item.eAttackMax + ' elemental dmg',
+                          item.magic + ' elemental cost'
+                          );
+                      }
+                      break;
+                    case 'accessory':
+                      info = [
+                        item.name + ' ' + item.lvl,
+                        item.type.capitalize(),
+                      ];
+
+                      if (Array.isArray(item.tooltip)) { // multi-line tooltip
+                        item.tooltip.forEach(function(cur) {
+                          info.push(cur);
+                        });
+                      } else {
+                        info.push(item.tooltip);
+                      }
+                      break;
+                  }
+                } else {
+                  info = [];
+                }
+              },
+              click: function () {
+                inventoryData.backpack[this.id] = [cursorItem, cursorItem = inventoryData.backpack[this.id]][0];
+              },
+              id: i
+            }));
+            i++;
+          }
         }
+      };
+      setupButtons();
+
+      return function () {
+        drawBg(23);
+        drawBackpack();
+        drawInfo();
+        drawCursor();
+      }
     })();
 
     var title = (function () { // title screen
@@ -497,7 +607,7 @@ var RPG_TEST = (function () {
           y: gameSettings.height / 2,
           width: 235,
           height: 36,
-          run: function () {
+          click: function () {
             STATE = 'newGame';
           }
         }),
@@ -507,7 +617,7 @@ var RPG_TEST = (function () {
           y: gameSettings.height / 2 + 50,
           width: 235,
           height: 36,
-          run: function () {
+          click: function () {
             STATE = 'credits';
           }
         }),
@@ -517,7 +627,7 @@ var RPG_TEST = (function () {
           y: gameSettings.height / 2 + 100,
           width: 235,
           height: 36,
-          run: function () {
+          click: function () {
             open('https://quique.gq/');
           }
         })
@@ -553,7 +663,7 @@ var RPG_TEST = (function () {
           y: gameSettings.height - 50,
           width: 250,
           height: 36,
-          run: function () {
+          click: function () {
             STATE = 'title';
           }
         }),
@@ -564,7 +674,7 @@ var RPG_TEST = (function () {
           y: gameSettings.height / 2 + 25,
           width: 205,
           height: 25,
-          run: function () {
+          click: function () {
             open('https://dan-ball.jp/en/javagame/ranger/');
           }
         }),
@@ -575,7 +685,7 @@ var RPG_TEST = (function () {
           y: gameSettings.height / 2 + 55,
           width: 170,
           height: 25,
-          run: function () {
+          click: function () {
             open('https://lospec.com/palette-list/pineapple-32');
           }
         })
@@ -627,7 +737,7 @@ var RPG_TEST = (function () {
             width: 50,
             height: 50,
             border: true,
-            run: function () {
+            click: function () {
               selectedMember = 1;
             }
           }),
@@ -637,7 +747,7 @@ var RPG_TEST = (function () {
             width: 50,
             height: 50,
             border: true,
-            run: function () {
+            click: function () {
               selectedMember = 2;
             }
           }),
@@ -647,7 +757,7 @@ var RPG_TEST = (function () {
             width: 50,
             height: 50,
             border: true,
-            run: function () {
+            click: function () {
               selectedMember = 3;
             }
           }),
@@ -657,7 +767,7 @@ var RPG_TEST = (function () {
             width: 50,
             height: 50,
             border: true,
-            run: function () {
+            click: function () {
               selectedMember = 4;
             }
           })
@@ -669,7 +779,7 @@ var RPG_TEST = (function () {
             width: 40,
             height: 40,
             border: true,
-            run: function () {
+            click: function () {
               selectedClass = 1;
               updateTeamData();
             }
@@ -680,7 +790,7 @@ var RPG_TEST = (function () {
             width: 40,
             height: 40,
             border: true,
-            run: function () {
+            click: function () {
               selectedClass = 2;
               updateTeamData();
             }
@@ -691,7 +801,7 @@ var RPG_TEST = (function () {
             width: 40,
             height: 40,
             border: true,
-            run: function () {
+            click: function () {
               selectedClass = 3;
               updateTeamData();
             }
@@ -702,7 +812,7 @@ var RPG_TEST = (function () {
             width: 40,
             height: 40,
             border: true,
-            run: function () {
+            click: function () {
               selectedClass = 4;
               updateTeamData();
             }
@@ -713,7 +823,7 @@ var RPG_TEST = (function () {
             width: 40,
             height: 40,
             border: true,
-            run: function () {
+            click: function () {
               selectedClass = 5;
               updateTeamData();
             }
@@ -724,7 +834,7 @@ var RPG_TEST = (function () {
             width: 40,
             height: 40,
             border: true,
-            run: function () {
+            click: function () {
               selectedClass = 6;
               updateTeamData();
             }
@@ -736,7 +846,7 @@ var RPG_TEST = (function () {
           x: gameSettings.width / 2 - 200,
           y: gameSettings.height - 40,
           height: 36,
-          run: function () {
+          click: function () {
             selectedMember = 1;
             selectedClass = undefined;
             checklist = [false, false, false, false];
@@ -752,7 +862,7 @@ var RPG_TEST = (function () {
           x: gameSettings.width / 2 + 200,
           y: gameSettings.height - 40,
           height: 36,
-          run: function () {
+          click: function () {
             if (checklist.every(Boolean)) STATE = 'map'; // will only continue if all team members have been selected a class
           }
         })
@@ -848,20 +958,24 @@ function randomInt(max) {
   return Math.floor(Math.random() * max);
 }
 
-String.prototype.replaceAt = function(index, replacement) {
+String.prototype.replaceAt = function (index, replacement) {
   return this.substr(0, index) + replacement + this.substr(index + replacement.length);
-}
+};
 
-function convertBase(value, from_base, to_base) {
+String.prototype.capitalize = function () {
+  return this.charAt(0).toUpperCase() + this.slice(1);
+};
+
+function convertBase(value, from_base, to_base) { // i know you can convert base 36 to 10 and whatever without this but i like it so im gonna use it
   var range = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+/'.split('');
   var from_range = range.slice(0, from_base);
   var to_range = range.slice(0, to_base);
-  
+
   var dec_value = value.split('').reverse().reduce(function (carry, digit, index) {
-    if (from_range.indexOf(digit) === -1) throw new Error('Invalid digit `'+digit+'` for base '+from_base+'.');
+    if (from_range.indexOf(digit) === -1) throw new Error('Invalid digit `' + digit + '` for base ' + from_base + '.');
     return carry += from_range.indexOf(digit) * (Math.pow(from_base, index));
   }, 0);
-  
+
   var new_value = '';
   while (dec_value > 0) {
     new_value = to_range[dec_value % to_base] + new_value;

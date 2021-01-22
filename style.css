@@ -8,19 +8,23 @@
   src: url('./assets/zeldadxt.ttf');
 }
 
+* {
+	margin: 0;
+	padding: 0;
+}
+
 body {
 	background: #111111;
 	color: #FFFFFF;
 	font-family: "Zelda DX";
+	text-align: center;
 }
 
 canvas {
 	/*border: 1px solid #FFFFFF;*/
 	/*cursor: url('./assets/cursor.png'), auto;*/
 	display: block;
-    margin: auto;
-	image-rendering: pixelated;
-	image-rendering: -moz-crisp-edges;
+	margin: auto;
 }
 
 #preload {
