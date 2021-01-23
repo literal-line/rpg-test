@@ -229,7 +229,7 @@ var RPG_TEST = (function () {
   };
 
   var gameLoop = (function () {
-    var STATE = 'map'; // keeps track of game state. which functions run during which state is determined by a switch statement at the end of this IIFE
+    var STATE = 'title'; // keeps track of game state; which functions run during which state is determined by a switch statement at the end of this IIFE
 
     var teamData = { // data for each stickman (will change later)
       member1: { class: 'Member 1', weapon: '', acc1: '', acc2: '' }, //  placeholder classes for the newGame screen
