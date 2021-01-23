@@ -17,7 +17,7 @@ var RPG_TEST = (function () {
     aa: false // leave this off to keep images c r i s p
   };
 
-  var setupEventListeners = function () {
+  var setupMouseEventListeners = function () {
     document.addEventListener('mousemove', function (e) {
       var coords = getMousePos(canvas, e);
       mouse.x = coords.x;
@@ -40,7 +40,7 @@ var RPG_TEST = (function () {
     });
   };
 
-  var setupCanvas = function() {
+  var setupCanvas = function () {
     canvas.width = gameSettings.width;
     canvas.height = gameSettings.height;
     canvas.style.width = gameSettings.widthCSS;
@@ -49,6 +49,19 @@ var RPG_TEST = (function () {
     canvas.style.imageRendering = gameSettings.aa ? 'auto' : 'pixelated';
     canvas.style.imageRendering = gameSettings.aa ? 'auto' : '-moz-crisp-edges';
     stage.imageSmoothingEnabled = gameSettings.aa;
+  };
+
+  var setupAudio = function () { // prevents sfx from interrupting sound in other tabs on certain browsers
+    for (var a in audio) {
+      audio[a].volume = 0.5;
+    }
+
+    audio.silence.addEventListener('ended', function () {
+      audio.silence.play();
+    });
+    document.addEventListener('mousedown', function () {
+      audio.silence.play();
+    });
   };
 
   var mouseClick = function () { // prevents buttons from being clicked when click-dragging
@@ -73,7 +86,12 @@ var RPG_TEST = (function () {
     tilesetGrass: './assets/tilesetGrass.png',
     weaponAssassin: './assets/weaponAssassin.png',
     accessory: './assets/accessory.png',
-    soundClick: './assets/click.wav'
+    soundSilence: './assets/5-seconds-of-silence.mp3',
+    soundClick: './assets/click.wav',
+    soundClick2: './assets/click2.wav',
+    soundClick3: './assets/click3.wav',
+    soundAccessory: './assets/compose.wav',
+    soundError: './assets/casherror.wav'
   };
 
   var sprites = { // image to img
@@ -87,7 +105,12 @@ var RPG_TEST = (function () {
   };
 
   var audio = {
-    click: newWav(assets.soundClick)
+    silence: new Audio(assets.soundSilence),
+    click: newWav(assets.soundClick),
+    click2: newWav(assets.soundClick2),
+    click3: newWav(assets.soundClick3),
+    accessory: newWav(assets.soundAccessory),
+    error: newWav(assets.soundError)
   };
 
   var colors = [ // color pallete for text. idk why im using this, just want consistent colors i guess...
@@ -129,8 +152,9 @@ var RPG_TEST = (function () {
   var init = function () {
     console.log('rpg-test ' + gameSettings.version);
     console.log('authors: ' + gameSettings.authors);
-    setupEventListeners();
+    setupMouseEventListeners();
     setupCanvas();
+    setupAudio();
   };
 
   var getMousePos = function (c, e) { // gets mouse pos on canvas by taking actual canvas position on document into account
@@ -172,47 +196,37 @@ var RPG_TEST = (function () {
     this.border = obj.border;
     this.hover = obj.hover; // <-- will call this function on hover
     this.click = obj.click; // <-- will call this function on click
+    this.noClickSound = obj.noClickSound ? true : false;
     this.id = obj.id;
   };
 
-  CButton.prototype.draw = (function () { // draw proto (might change name later...)
-    audio.click.volume = 0.5;
+  CButton.prototype.draw = function () { // draw proto (might change name later...)
+    var mx = mouse.x;
+    var my = mouse.y;
+    var x = this.x;
+    var y = this.y;
+    var width = this.width;
+    var height = this.height;
+    if (this.border) {
+      stage.lineWidth = 2;
+      stage.strokeStyle = colors[this.borderColor];
+      stage.strokeRect(x - width / 2, y - height / 2, width, height);
+    }
+    stage.fillStyle = colors[this.bgColor];
+    stage.fillRect(x - width / 2, y - height / 2, width, height);
 
-    return function () {
-      var mx = mouse.x;
-      var my = mouse.y;
-      var x = this.x;
-      var y = this.y;
-      var width = this.width;
-      var height = this.height;
-      if (this.border) {
-        stage.lineWidth = 2;
-        stage.strokeStyle = colors[this.borderColor];
-        stage.strokeRect(x - width / 2, y - height / 2, width, height);
-      }
-      stage.fillStyle = colors[this.bgColor];
+    if (mx >= x - width / 2 && mx < x + width / 2 && my >= y - height / 2 && my < y + height / 2) {
+      stage.fillStyle = hexToRgba(colors[this.bgHoverColor], 0.25);
       stage.fillRect(x - width / 2, y - height / 2, width, height);
-
-      if (mx >= x - width / 2 && mx <= x + width / 2 && my >= y - height / 2 && my <= y + height / 2) {
-        stage.fillStyle = hexToRgba(colors[this.bgHoverColor], 0.25);
-        stage.fillRect(x - width / 2, y - height / 2, width, height);
-        if (this.hover) this.hover();
-        if (mouse.click) {
-          audio.click.play();
-          mouse.click = false;
-          this.click();
-        }
+      if (this.hover) this.hover();
+      if (mouse.click) {
+        if (!this.noClickSound) audio.click.play();
+        mouse.click = false;
+        this.click();
       }
-      if (this.text)
-        drawText({
-          text: this.text,
-          color: this.color,
-          x: x,
-          y: y + 5,
-          center: true
-        });
-    };
-  })();
+    }
+    if (this.text) drawText({ text: this.text, color: this.color, x: x, y: y + 5, center: true });
+  };
 
   var gameLoop = (function () {
     var STATE = 'title'; // keeps track of game state. which functions run during which state is determined by a switch statement at the end of this IIFE
@@ -319,8 +333,8 @@ var RPG_TEST = (function () {
     ];
 
     var items = { // all items
-      daggerStarter0: { name: 'Butter Knife', type: 'weapon', lvl: 0, class: 'Assassin', dmgType: 'Physical', attackMin: 1, attackMax: 2, imageColumn: 0 },
-      daggerPhysical1: { name: 'Stone Dagger', type: 'weapon', lvl: 1, class: 'Assassin', dmgType: 'Physical', attackMin: 2, attackMax: 4, imageColumn: 0 },
+      dagger0: { name: 'Dagger', type: 'weapon', lvl: 0, class: 'Assassin', dmgType: 'Physical', attackMin: 1, attackMax: 2, imageColumn: 0 },
+      daggerPhysical1: { name: 'Stone Dagger', type: 'weapon', lvl: 1, class: 'Assassin', dmgType: 'Physical', attackMin: 4, attackMax: 6, imageColumn: 0 },
       daggerBurn1: { name: 'Glowing Dagger', type: 'weapon', lvl: 1, class: 'Assassin', dmgType: 'Burn', attackMin: 2, attackMax: 3, eAttackMin: 2, eAttackMax: 3, magic: 10, imageColumn: 1 },
       daggerShock1: { name: 'Electric Dagger', type: 'weapon', lvl: 1, class: 'Assassin', dmgType: 'Shock', attackMin: 2, attackMax: 3, eAttackMin: 1, eAttackMax: 6, magic: 10, imageColumn: 2 },
       daggerFreeze1: { name: 'Frozen Dagger', type: 'weapon', lvl: 1, class: 'Assassin', dmgType: 'Freeze', attackMin: 2, attackMax: 3, eAttackMin: 3, eAttackMax: 3, magic: 15, imageColumn: 3 },
@@ -338,15 +352,13 @@ var RPG_TEST = (function () {
     };
 
     var inventoryData = {
-      m1: { weapon: 0, acc1: 0, acc2: 0 },
-      m2: { weapon: 0, acc1: 0, acc2: 0 },
-      m3: { weapon: 0, acc1: 0, acc2: 0 },
-      m4: { weapon: 0, acc1: 0, acc2: 0 },
+      weapons: [0, 0, 0, 0],
+      //accessories: [0, 0, 0, 0, 0, 0, 0, 0],
       backpack: [ // array of items in backpack
-        'daggerStarter0', 0, 0, 0, 0, 0,
-        'daggerPhysical1', 'daggerBurn1', 'daggerShock1', 'daggerFreeze1', 'daggerPoison1', 0,
-        'daggerPhysical2', 'daggerBurn2', 'daggerShock2', 'daggerFreeze2', 'daggerPoison2', 0,
-        'card0', 'cardQuick1', 'cardSniper1', 'cardOnigiri1','cardLum1', 0
+        {name: 'dagger0', type: 'weapon', accessories: [0, 0]}, 0, 0, 0, 0, 0,
+        {name: 'daggerPhysical1', type: 'weapon', accessories: [0, 0]}, {name: 'daggerBurn1', type: 'weapon', accessories: [0, 0]}, {name: 'daggerShock1', type: 'weapon', accessories: [0, 0]}, {name: 'daggerFreeze1', type: 'weapon', accessories: [0, 0]}, {name: 'daggerPoison1', type: 'weapon', accessories: [0, 0]}, 0,
+        {name: 'daggerPhysical2', type: 'weapon', accessories: [0, 0]}, {name: 'daggerBurn2', type: 'weapon', accessories: [0, 0]}, {name: 'daggerShock2', type: 'weapon', accessories: [0, 0]}, {name: 'daggerFreeze2', type: 'weapon', accessories: [0, 0]}, {name: 'daggerPoison2', type: 'weapon', accessories: [0, 0]}, 0,
+        {name: 'card0', type: 'accessory'}, {name: 'cardQuick1', type: 'accessory'}, {name: 'cardSniper1', type: 'accessory'}, {name: 'cardOnigiri1', type: 'accessory'}, {name: 'cardLum1', type: 'accessory'}, 0
       ]
     };
 
@@ -480,28 +492,107 @@ var RPG_TEST = (function () {
 
     var inventoryBar = (function () { // unfinished crap
       var buttons = {
-        backpack: []
+        inventory: []
       };
 
       var info = [];
       var isHovering = false;
       var cursorItem = 0;
 
+      var itemSlotHover = function () {
+        isHovering = true;
+        var section = this.id[0];
+        var slotId = this.id[1];
+        var item;
+
+        if (section === 'accessories') {
+          var weapon = inventoryData.weapons[Math.floor(slotId / 2)];
+          item = weapon ? items[weapon.accessories[slotId % 2].name] : 0
+        } else {
+          item = items[inventoryData[section][slotId].name];
+        }
+
+        if (item) {
+          switch (item.type) {
+            case 'weapon':
+              info = [
+                item.name + ' ' + item.lvl,
+                item.dmgType + ' type ' + item.type,
+                item.attackMin + '-' + item.attackMax + ' hit dmg'
+              ];
+
+              if (item.eAttackMin || item.eAttackMax || item.magic) {
+                info.push(
+                  item.eAttackMin + '-' + item.eAttackMax + ' elemental dmg',
+                  item.magic + ' elemental cost'
+                );
+              }
+              break;
+            case 'accessory':
+              info = [
+                item.name + ' ' + item.lvl,
+                item.type.capitalize(),
+              ];
+
+              if (Array.isArray(item.tooltip)) { // multi-line tooltip
+                item.tooltip.forEach(function (cur) {
+                  info.push(cur);
+                });
+              } else {
+                info.push(item.tooltip);
+              }
+              break;
+          }
+        } else {
+          info = [];
+        }
+      };
+
+      var itemSlotClick = function () {
+        var section = this.id[0];
+        var slotId = this.id[1];
+        if (section === 'accessories' && cursorItem.type === 'accessory') {
+          var accSlot = slotId % 2;
+          var weaponSlot = Math.floor(slotId / 2);
+          var weapon = inventoryData.weapons[weaponSlot];
+          if (weapon) {
+            weapon.accessories[accSlot] = cursorItem;
+            cursorItem = 0;
+            audio.accessory.play();
+          }
+        } else if ((section === 'weapons' && (cursorItem.type === 'weapon' || !cursorItem)) || section === 'backpack') {
+          if (section === 'weapons') audio.click3.play();
+          inventoryData[section][slotId] = [cursorItem, cursorItem = inventoryData[section][slotId]][0];
+        } else {
+          audio.error.play();
+        }
+      };
+
       var drawBg = function (color) {
         stage.fillStyle = colors[color];
         stage.fillRect(0, gameSettings.height - 160, gameSettings.width, 160);
       };
 
-      var drawCursor = function() {
+      var drawCursor = function () {
         if (cursorItem) {
-          var item = items[cursorItem];
-          var currentSpritesheet = sprites[item.type === 'weapon' ? item.type + item.class : item.type];
+          var item = items[cursorItem.name];
+          var currentSpritesheet;
+          switch (item.type) {
+            case 'weapon':
+              currentSpritesheet = sprites['weapon' + item.class];
+              break;
+            case 'accessory':
+              currentSpritesheet = sprites.accessory;
+              break;
+          }
           var imageRow = item.lvl * 24;
           stage.drawImage(currentSpritesheet, item.imageColumn * 24, imageRow, 24, 24, mouse.x - 12, mouse.y - 12, 24, 24);
         }
       };
 
       var drawInfo = function () {
+        drawText({ text: 'weapon', size: 10, color: 20, x: 180, y: gameSettings.height - 112, outline: true });
+        drawText({ text: 'accessories', size: 10, color: 20, x: 180, y: gameSettings.height - 72, outline: true });
         if (isHovering) {
           for (var i = 0; i < info.length; i++) {
             drawText({
@@ -518,82 +609,103 @@ var RPG_TEST = (function () {
         }
       };
 
-      var drawBackpack = function () {
+      var drawItemSlots = function () {
         isHovering = false;
-        for (var i = 0; i < buttons.backpack.length; i++) {
-          var currentSlot = buttons.backpack[i];
-          var currentItem = items[inventoryData.backpack[i]];
+
+        for (var i = 0; i < buttons.inventory.length; i++) {
+          var currentSlot, currentItem, currentItemData, imageRow, currentSpritesheet, section, slotId;
+          currentSlot = buttons.inventory[i];
+          section = currentSlot.id[0];
+          slotId = currentSlot.id[1];
           currentSlot.draw();
-          if (currentItem) {
-            var currentSpritesheet = sprites[(currentItem.type === 'weapon' ? currentItem.type + currentItem.class : currentItem.type)];
-            var imageRow = currentItem.lvl * 24;
-            stage.drawImage(currentSpritesheet, currentItem.imageColumn * 24, imageRow, 24, 24, currentSlot.x - 12, currentSlot.y - 12, 24, 24);
+
+          if (section === 'accessories') {
+            var weapon = inventoryData.weapons[Math.floor(slotId / 2)];
+            currentItem = weapon ? weapon.accessories[slotId % 2] : 0;
+          } else {
+            currentItem = inventoryData[section][slotId];
           }
+          currentItemData = items[currentItem.name];
+          imageRow = currentItemData ? currentItemData.lvl * 24 : 0;
+
+          switch (currentItem.type) {
+            case 'weapon':
+              currentSpritesheet = sprites['weapon' + currentItemData.class];
+              break;
+            case 'accessory':
+              currentSpritesheet = sprites.accessory;
+              break;
+          }
+
+          if (currentItem) stage.drawImage(currentSpritesheet, currentItemData.imageColumn * 24, imageRow, 24, 24, currentSlot.x - 12, currentSlot.y - 12, 24, 24);
         }
       };
 
-      var setupButtons = function () {
+      var setupWeaponButtons = function () {
+        for (var i = 0; i < 4; i++) { // weapons
+          buttons.inventory.push(new CButton({
+            x: 20 + i * 45,
+            y: gameSettings.height - 100,
+            width: 35,
+            height: 35,
+            border: false,
+            hover: itemSlotHover,
+            click: itemSlotClick,
+            noClickSound: true,
+            id: ['weapons', i]
+          }));
+        }
+      };
+
+      var setupAccessoryButtons = function () {
         var i = 0;
-        for (var y = 0; y < 4; y++) {
-          for (var x = 0; x < 6; x++) {
-            buttons.backpack.push(new CButton({
-              x: gameSettings.width - 220 + x * 40,
-              y: gameSettings.height - 140 + y * 40,
+        for (var x = 0; x < 4; x++) { // accessories
+          for (var y = 0; y < 2; y++) {
+            buttons.inventory.push(new CButton({
+              x: 20 + x * 45,
+              y: gameSettings.height - 60 + y * 40,
               width: 35,
               height: 35,
               border: false,
-              hover: function () {
-                isHovering = true;
-                var item = items[inventoryData.backpack[this.id]];
-                if (item) {
-                  switch(item.type) {
-                    case 'weapon':
-                      info = [
-                        item.name + ' ' + item.lvl,
-                        item.dmgType + ' type ' + item.type,
-                        item.attackMin + '-' + item.attackMax + ' hit dmg'
-                      ];
-
-                      if (item.eAttackMin || item.eAttackMax || item.magic) {
-                        info.push(
-                          item.eAttackMin + '-' + item.eAttackMax + ' elemental dmg',
-                          item.magic + ' elemental cost'
-                          );
-                      }
-                      break;
-                    case 'accessory':
-                      info = [
-                        item.name + ' ' + item.lvl,
-                        item.type.capitalize(),
-                      ];
-
-                      if (Array.isArray(item.tooltip)) { // multi-line tooltip
-                        item.tooltip.forEach(function(cur) {
-                          info.push(cur);
-                        });
-                      } else {
-                        info.push(item.tooltip);
-                      }
-                      break;
-                  }
-                } else {
-                  info = [];
-                }
-              },
-              click: function () {
-                inventoryData.backpack[this.id] = [cursorItem, cursorItem = inventoryData.backpack[this.id]][0];
-              },
-              id: i
+              hover: itemSlotHover,
+              click: itemSlotClick,
+              noClickSound: true,
+              id: ['accessories', i]
             }));
             i++;
           }
         }
       };
-      setupButtons();
+
+      var setupBackpackButtons = function () {
+        var i = 0;
+        for (var y = 0; y < 4; y++) { // backpack
+          for (var x = 0; x < 6; x++) {
+            buttons.inventory.push(new CButton({
+              x: gameSettings.width - 220 + x * 40,
+              y: gameSettings.height - 140 + y * 40,
+              width: 35,
+              height: 35,
+              border: false,
+              hover: itemSlotHover,
+              click: itemSlotClick,
+              id: ['backpack', i]
+            }));
+            i++;
+          }
+        }
+      };
+
+      var initButtons = function () {
+        setupWeaponButtons();
+        setupAccessoryButtons();
+        setupBackpackButtons();
+      };
+      initButtons();
 
       return function () {
         drawBg(23);
-        drawBackpack();
+        drawItemSlots();
         drawInfo();
         drawCursor();
       }
