@@ -425,16 +425,20 @@ var RPG_TEST = (function () {
         var data = level.multiple ? randomInt(5) : level.data[0]; // pick random level 0-4 unless there is only one (e.g. title screen) 
         for (var y = 0; y < vertical; y++) {
           for (var x = 0; x < horizontal; x++) {
-            stage.drawImage(
-              tileset,
-              parseInt(data[y].charAt(x)) * 16,
-              0,
-              16,
-              16,
-              x * 16,
-              y * 16,
-              16,
-              16);
+            var curTile = parseInt(data[y].charAt(x)) * 16;
+            if (curTile) {
+              stage.drawImage(
+                tileset,
+                curTile,
+                0,
+                16,
+                16,
+                x * 16,
+                y * 16,
+                16,
+                16
+              );
+            }
           }
         }
       };
