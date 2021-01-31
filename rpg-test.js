@@ -7,7 +7,7 @@ var RPG_TEST = (function () {
   var canvas = document.createElement('canvas');
   var stage = canvas.getContext('2d');
   var gameSettings = {
-    version: 'v0.1-20210123-2002est',
+    version: 'v0.1-20210131-0414est',
     authors: ['Literal Line'], // in case you mod or whatever
     width: 768,
     height: 432,
