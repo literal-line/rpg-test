@@ -7,7 +7,7 @@ var RPG_TEST = (function () {
   var canvas = document.createElement('canvas');
   var stage = canvas.getContext('2d');
   var gameSettings = {
-    version: 'v0.1-20210131-0414est',
+    version: 'v0.1-20210131-0433est',
     authors: ['Literal Line'], // in case you mod or whatever
     width: 768,
     height: 432,
@@ -49,6 +49,7 @@ var RPG_TEST = (function () {
     canvas.style.imageRendering = gameSettings.aa ? 'auto' : 'pixelated';
     canvas.style.imageRendering = gameSettings.aa ? 'auto' : '-moz-crisp-edges';
     stage.imageSmoothingEnabled = gameSettings.aa;
+    stage.textRendering = gameSettings.aa ? 'auto' : 'pixelated';
   };
 
   var setupAudio = function () { // prevents sfx from interrupting sound in other tabs on certain browsers
