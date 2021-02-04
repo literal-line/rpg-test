@@ -36,6 +36,7 @@ var RPG_TEST = (function () {
       }
     });
     canvas.addEventListener('touchstart', function (e) {
+      mouseMove(e);
       mouse.down = true;
       mouseClick();
     });
