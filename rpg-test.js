@@ -7,7 +7,7 @@ var RPG_TEST = (function () {
   var canvas = document.createElement('canvas');
   var stage = canvas.getContext('2d');
   var gameSettings = {
-    version: 'v0.1-20210131-0445est',
+    version: 'v0.1-20210203-2013est',
     authors: ['Literal Line'], // in case you mod or whatever
     width: 768,
     height: 432,
@@ -150,14 +150,6 @@ var RPG_TEST = (function () {
     '#601761'
   ];
 
-  var init = function () {
-    console.log('rpg-test ' + gameSettings.version);
-    console.log('authors: ' + gameSettings.authors);
-    setupMouseEventListeners();
-    setupCanvas();
-    setupAudio();
-  };
-
   var getMousePos = function (c, e) { // gets mouse pos on canvas by taking actual canvas position on document into account
     var rect = c.getBoundingClientRect();
     var scaleX = gameSettings.width / rect.width;
@@ -168,11 +160,21 @@ var RPG_TEST = (function () {
     };
   };
 
-  var drawLine = function (startX, startY, endX, endY) { // draw a line but easier ¯\_(ツ)_/¯
+  var drawLine = function (sx, sy, dx, dy, color, width) { // draw a line but easier
+    stage.strokeStyle = colors[color];
+    stage.lineWidth = width;
     stage.beginPath();
-    stage.moveTo(startX, startY);
-    stage.lineTo(endX, endY);
+    stage.moveTo(sx, sy);
+    stage.lineTo(dx, dy);
     stage.stroke();
+  };
+
+  var drawDottedLine = function (sx, sy, dx, dy, color) { // draw dotted line made up of evenly-spaced dots
+    var maxDots = Math.floor(Math.sqrt(Math.pow(dx - sx, 2) + Math.pow(dy - sy, 2)) / 10);
+    stage.fillStyle = colors[color];
+    for (var i = 1; i < maxDots; i++) {
+      stage.fillRect(Math.floor(sx + (dx - sx) / maxDots * i), Math.floor(sy + (dy - sy) / maxDots * i), 3, 3);
+    }
   };
 
   var drawText = function (obj) { // more uniform way of drawing text
@@ -191,11 +193,13 @@ var RPG_TEST = (function () {
     this.y = obj.y;
     this.width = obj.width || 150;
     this.height = obj.height || 75;
-    this.borderColor = obj.borderColor || 1;
-    this.bgColor = obj.bgColor || 8;
-    this.bgHoverColor = obj.bgHoverColor || 2;
+    this.bgColor = obj.bgColor || colors[8];
+    this.bgHoverColor = obj.bgHoverColor || hexToRgba(colors[2], 0.25);
     this.border = obj.border;
+    this.borderColor = obj.borderColor || 1;
+    this.borderWidth = obj.borderWidth || 2;
     this.hover = obj.hover; // <-- will call this function on hover
+    this.notHover = obj.notHover; // <-- will call this function on !hover
     this.click = obj.click; // <-- will call this function on click
     this.noClickSound = obj.noClickSound ? true : false;
     this.id = obj.id;
@@ -209,15 +213,15 @@ var RPG_TEST = (function () {
     var width = this.width;
     var height = this.height;
     if (this.border) {
-      stage.lineWidth = 2;
+      stage.lineWidth = this.borderWidth;
       stage.strokeStyle = colors[this.borderColor];
       stage.strokeRect(x - width / 2, y - height / 2, width, height);
     }
-    stage.fillStyle = colors[this.bgColor];
+    stage.fillStyle = this.bgColor;
     stage.fillRect(x - width / 2, y - height / 2, width, height);
 
     if (mx >= x - width / 2 && mx < x + width / 2 && my >= y - height / 2 && my < y + height / 2) {
-      stage.fillStyle = hexToRgba(colors[this.bgHoverColor], 0.25);
+      stage.fillStyle = this.bgHoverColor;
       stage.fillRect(x - width / 2, y - height / 2, width, height);
       if (this.hover) this.hover();
       if (mouse.click) {
@@ -225,11 +229,11 @@ var RPG_TEST = (function () {
         mouse.click = false;
         this.click();
       }
-    }
+    } else if (this.notHover) this.notHover();
     if (this.text) drawText({ text: this.text, color: this.color, x: x, y: y + 5, center: true });
   };
 
-  var gameLoop = (function () {
+  var game = (function () {
     var STATE = 'title'; // keeps track of game state; which functions run during which state is determined by a switch statement at the end of this IIFE
 
     var teamData = { // data for each stickman (will change later)
@@ -259,8 +263,8 @@ var RPG_TEST = (function () {
         'ddeee0000000000000455a0g0009222c000000000000000000000000000000008ddddb0755555676e8gbe4a4a0000000000000000000000000000000000000000000000000000000',
         'dee0000000000000000008000g000gb0000000000000000000000075555a00008ddddb767555556ee92cee4500000000000000000000000000000000000000000000000000000000',
         'ee00000000000000000004555a0000b000000000000000000000008ddddb00008jjjj4676dddddeeeeeeeee000000000000000555550000000000000000000000000000000000000',
-        '222230000000000000000000045a076000045a00000000000000008ddddb00008jjjj456dddddddeeeeeeed000000000000000000000000000000000000000000000000000000000',
-        '00009300000000000000012300045600000004555555555555a0076ddddb00076jjjjdddddddddddddddddd000000000000000000000000000000000000000000000000000000000',
+        '2222300000dd000000000000045a076000045a00000000000000008ddddb00008jjjj456dddddddeeeeeeed000000000000000000000000000000000000000000000000000000000',
+        '000093000dd0d0000000012300045600000004555555555555a0076ddddb00076jjjjdddddddddddddddddd000000000000000000000000000000000000000000000000000000000',
         '00000b000000000000000b093000000000000000000000000045560jjjj45556ijjjjiddddddddddddddddd000000000000000000000000000000000000000000000000000000000',
         '555556000000000000000b009230000000000000000000000000007jjjj55556diiiidddddddddddddddddd000000000000000000000000000000000000000000000000000000000',
         '000000000000000000001cg00092223000000000000000000000008iiiidddddddddddddddddddddddddddd000000000000000000000000000000000000000000000000000000000',
@@ -273,77 +277,211 @@ var RPG_TEST = (function () {
         '000000000000000000060006007000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
         '000000000000000000700000300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
         '000000000000000000000000000000000000077700000077770000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-        '000000000000000101000700070000000070000007777007000770000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-        '000000000000000100010000000000000700000000000000000077000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-        '000000000000000011030000000700007000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-        '000000000000000000101077000000070000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+        '000000000000001101000700070000000070000007777007000770000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+        '000000000000011100010000000000000700000000000000000077000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+        '000000000000000111030000000700007000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+        '000000000000000010101077000000070000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
         '000000000000000000000000007077070007700070070000770007000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-        '000000000000000000000020000070000070007077707707777007000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-        '001000000000000000000000001000000000100000000000000770000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+        '000001000100100000000020000070000070007077707707777007000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+        '001000000001000000000000001000000000100000000000000770000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
         '100000100000000000001070000000000000001101110101010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-        '000000100000000000011000700010000000000000000110001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-        '000000000000000001110000007000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-        '000000000000011100007000000077000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-        '000000000001100000000000070000000000100000000000000100000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+        '000000100000000001111000700010000000000000000110001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+        '000000000000001111110000007000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+        '000000000110111100007000000077000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+        '110000000001100000000000070000000000100000000000000100000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
         '000000000000000000000070000700070000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
-      ]
+      ],
+      lvls: {
+        'Inn': {
+          x: 25,
+          y: 230,
+          before: 0,
+          inn: true,
+          dot: true,
+          visible: true
+        },
+        'Plains 1': {
+          x: 100,
+          y: 225,
+          before: ['Inn'],
+          line: true,
+          dot: true,
+          visible: true
+        },
+        'Plains 2': {
+          x: 160,
+          y: 205,
+          before: ['Plains 1'],
+          line: true,
+          dot: true,
+          visible: true
+        },
+        'Plains 3': {
+          x: 115,
+          y: 145,
+          before: ['Plains 2'],
+          line: true,
+          dot: true,
+          visible: true
+        },
+        'Lake': {
+          x: 178,
+          y: 145,
+          before: ['Plains 5'],
+          line: true,
+          dot: true,
+          visible: true
+        },
+        'Beach 1': {
+          x: 80,
+          y: 110,
+          before: ['Plains 3'],
+          line: true,
+          dot: true,
+          visible: true
+        },
+        'Beach 2': {
+          x: 105,
+          y: 70,
+          before: ['Beach 1'],
+          line: true,
+          dot: true,
+          visible: true
+        },
+        'Plains 4': {
+          x: 230,
+          y: 170,
+          before: ['Plains 2'],
+          line: true,
+          dot: true,
+          visible: true
+        },
+        'Plains 5': {
+          x: 190,
+          y: 100,
+          before: ['Plains 3', 'Plains 4'],
+          line: true,
+          dot: true,
+          visible: true
+        },
+        'Castle Gate': {
+          x: 290,
+          y: 155,
+          before: ['Plains 4'],
+          line: true,
+          dot: true,
+          visible: true
+        },
+        'Cave 1': {
+          x: 312,
+          y: 106,
+          before: ['Castle Gate'],
+          line: true,
+          dot: false,
+          visible: true
+        },
+        'Cave 2': {
+          x: 392,
+          y: 42,
+          before: ['Cave 1'],
+          line: false,
+          dot: false,
+          visible: true
+        },
+        'Cliff 1': {
+          x: 315,
+          y: 65,
+          before: ['Cave 2'],
+          line: true,
+          dot: true,
+          visible: true
+        },
+        'Cliff 2': {
+          x: 262,
+          y: 40,
+          before: ['Cliff 1'],
+          line: true,
+          dot: true,
+          visible: true
+        },
+        'Cliff 3': {
+          x: 200,
+          y: 30,
+          before: ['Cliff 2'],
+          line: true,
+          dot: true,
+          visible: true
+        },
+        'Lodge': {
+          x: 152,
+          y: 11,
+          before: ['Cliff 3'],
+          line: true,
+          dot: false,
+          visible: true
+        },
+        'Castle': {
+          x: 360,
+          y: 155,
+          before: ['Castle Gate'],
+          line: true,
+          visible: true,
+          dot: false
+        },
+      }
     };
 
     var levelMaps = { // different maps
       title: [
-        [
-          '000000000000000000000000000000000000000000000000',
-          '000000000000000000000000000000000000000000000000',
-          '000000000000000000000000000000000000000000000000',
-          '000000000000000000000000000000000000000000000000',
-          '000000000000000000000000000000000000000000000000',
-          '000000000000000000000000000000000000000000000000',
-          '000000000000000000000000000000000000000000000000',
-          '000000000000000000000000000000000000000000000000',
-          '000000000000000000000000000000000000000000000000',
-          '000000000000000000000000000000000000000000000000',
-          '000000000000000000000000000000000000000000000000',
-          '000000000000000000000000000000000000000000000000',
-          '000000000000000000000000000000000000000000000000',
-          '000000000000000000000000000000000000000000000000',
-          '000000000000000000000000000000000000000000000000',
-          '000000000000000000000000000000000000000000000000',
-          '000000000000000000000000000000000000000000000000',
-          '000000000000000000000000000000000000000000000000',
-          '000000000000000000000000000000000000000000000000',
-          '000000000000000000000000000000000000000000000000',
-          '222230000000000000000000000000000000000000012222',
-          '555552222300000000000000000000000000001222255555',
-          '555555555522223000000000000000000122225555555555',
-          '555555555555555222222222222222222555555555555555',
-          '555555555555555555555555555555555555555555555555',
-          '555555555555555555555555555555555555555555555555',
-          '555555555555555555555555555555555555555555555555'
-        ]
+        '000000000000000000000000000000000000000000000000',
+        '000000000000000000000000000000000000000000000000',
+        '000000000000000000000000000000000000000000000000',
+        '000000000000000000000000000000000000000000000000',
+        '000000000000000000000000000000000000000000000000',
+        '000000000000000000000000000000000000000000000000',
+        '000000000000000000000000000000000000000000000000',
+        '000000000000000000000000000000000000000000000000',
+        '000000000000000000000000000000000000000000000000',
+        '000000000000000000000000000000000000000000000000',
+        '000000000000000000000000000000000000000000000000',
+        '000000000000000000000000000000000000000000000000',
+        '000000000000000000000000000000000000000000000000',
+        '000000000000000000000000000000000000000000000000',
+        '000000000000000000000000000000000000000000000000',
+        '000000000000000000000000000000000000000000000000',
+        '000000000000000000000000000000000000000000000000',
+        '000000000000000000000000000000000000000000000000',
+        '000000000000000000000000000000000000000000000000',
+        '000000000000000000000000000000000000000000000000',
+        '222230000000000000000000000000000000000000012222',
+        '555552222300000000000000000000000000001222255555',
+        '555555555522223000000000000000000122225555555555',
+        '555555555555555222222222222222222555555555555555',
+        '555555555555555555555555555555555555555555555555',
+        '555555555555555555555555555555555555555555555555',
+        '555555555555555555555555555555555555555555555555'
       ],
       land: [ /* bruh */]
     };
 
-    var levelData = [
-      {
-        name: 'title',
+    var levelData = {
+      'title': {
         tileset: tilesets.grass,
-        data: levelMaps.title,
-        multiple: false // will pick random map if set to true (intended for actual levels later on...)
+        data: levelMaps.title
       }
-    ];
+    };
 
     var items = { // all items
       dagger0: { name: 'Dagger', type: 'weapon', lvl: 0, class: 'Assassin', dmgType: 'Physical', attackMin: 1, attackMax: 2, imageColumn: 0 },
       daggerPhysical1: { name: 'Stone Dagger', type: 'weapon', lvl: 1, class: 'Assassin', dmgType: 'Physical', attackMin: 4, attackMax: 6, imageColumn: 0 },
-      daggerBurn1: { name: 'Glowing Dagger', type: 'weapon', lvl: 1, class: 'Assassin', dmgType: 'Burn', attackMin: 2, attackMax: 3, eAttackMin: 2, eAttackMax: 3, magic: 10, imageColumn: 1 },
+      daggerBurn1: { name: 'Flame Dagger', type: 'weapon', lvl: 1, class: 'Assassin', dmgType: 'Burn', attackMin: 2, attackMax: 3, eAttackMin: 2, eAttackMax: 3, magic: 10, imageColumn: 1 },
       daggerShock1: { name: 'Electric Dagger', type: 'weapon', lvl: 1, class: 'Assassin', dmgType: 'Shock', attackMin: 2, attackMax: 3, eAttackMin: 1, eAttackMax: 6, magic: 10, imageColumn: 2 },
-      daggerFreeze1: { name: 'Frozen Dagger', type: 'weapon', lvl: 1, class: 'Assassin', dmgType: 'Freeze', attackMin: 2, attackMax: 3, eAttackMin: 3, eAttackMax: 3, magic: 15, imageColumn: 3 },
+      daggerFreeze1: { name: 'Ice Dagger', type: 'weapon', lvl: 1, class: 'Assassin', dmgType: 'Freeze', attackMin: 2, attackMax: 3, eAttackMin: 3, eAttackMax: 3, magic: 15, imageColumn: 3 },
       daggerPoison1: { name: 'Poison Dagger', type: 'weapon', lvl: 1, class: 'Assassin', dmgType: 'Poison', attackMin: 2, attackMax: 3, eAttackMin: 1, eAttackMax: 1, magic: 15, imageColumn: 4 },
       daggerPhysical2: { name: 'Iron Knife', type: 'weapon', lvl: 2, class: 'Assassin', dmgType: 'Physical', attackMin: 8, attackMax: 10, imageColumn: 0 },
-      daggerBurn2: { name: 'Flame Knife', type: 'weapon', lvl: 2, class: 'Assassin', dmgType: 'Burn', attackMin: 5, attackMax: 7, eAttackMin: 5, eAttackMax: 6, magic: 12, imageColumn: 1 },
+      daggerBurn2: { name: 'Glowing Knife', type: 'weapon', lvl: 2, class: 'Assassin', dmgType: 'Burn', attackMin: 5, attackMax: 7, eAttackMin: 5, eAttackMax: 6, magic: 12, imageColumn: 1 },
       daggerShock2: { name: 'Thunder Knife', type: 'weapon', lvl: 2, class: 'Assassin', dmgType: 'Shock', attackMin: 5, attackMax: 7, eAttackMin: 1, eAttackMax: 15, magic: 12, imageColumn: 2 },
-      daggerFreeze2: { name: 'Ice Knife', type: 'weapon', lvl: 2, class: 'Assassin', dmgType: 'Freeze', attackMin: 5, attackMax: 7, eAttackMin: 8, eAttackMax: 10, magic: 20, imageColumn: 3 },
+      daggerFreeze2: { name: 'Frozen Knife', type: 'weapon', lvl: 2, class: 'Assassin', dmgType: 'Freeze', attackMin: 5, attackMax: 7, eAttackMin: 8, eAttackMax: 10, magic: 20, imageColumn: 3 },
       daggerPoison2: { name: 'Toxic Knife', type: 'weapon', lvl: 2, class: 'Assassin', dmgType: 'Poison', attackMin: 5, attackMax: 7, eAttackMin: 1, eAttackMax: 2, magic: 20, imageColumn: 4 },
       card0: { name: 'Placeholder card', type: 'accessory', lvl: 0, tooltip: ['Nothing. Nothing at', 'all.'], imageColumn: 0 },
       cardQuick1: { name: 'Quick card', type: 'accessory', lvl: 1, tooltip: 'Attack interval -10%', imageColumn: 0 },
@@ -370,120 +508,130 @@ var RPG_TEST = (function () {
       drawText({ text: 'Actual gameplay coming soon... ;)', color: 12, x: gameSettings.width / 2, y: gameSettings.height - 60, center: true });
     };
 
-    var level = (function () { // i cant
-      /*var Stickman = function (obj) {
-        this.joints = {
-          shoulders: { x: 0, y: 0 },
-          elbowRight: { x: 0, y: 0, rot: 0 },
-          elbowLeft: { x: 0, y: 0, rot: 0 },
-          handRight: { x: 0, y: 0, rot: 0 },
-          handLeft: { x: 0, y: 0, rot: 0 },
-          hips: { x: 0, y: 0, rot: 0 },
-          kneeRight: { x: 0, y: 0, rot: 0 },
-          kneeLeft: { x: 0, y: 0, rot: 0 },
-          footRight: { x: 0, y: 0, rot: 0 },
-          footLeft: { x: 0, y: 0, rot: 0 }
-        };
-      };
+    var level = (function () { // i cant do physics
+      var levelCanvas = document.createElement('canvas');
+      var levelStage = levelCanvas.getContext('2d');
 
-      Stickman.prototype.doPhysics = function () {
-        // bruh
-      };
-
-      Stickman.prototype.draw = function () { // this works and will probably stay here a while...
-        var joints = this.joints;
-        stage.strokeStyle = colors[20];
-        stage.lineWidth = 1;
-        drawLine(joints.shoulders.x, joints.shoulders.y, joints.hips.x, joints.hips.y);
-        stage.beginPath();
-        stage.moveTo(joints.handLeft.x, joints.handLeft.y);
-        stage.lineTo(joints.elbowLeft.x, joints.elbowLeft.y);
-        stage.lineTo(joints.shoulders.x, joints.shoulders.y);
-        stage.lineTo(joints.elbowRight.x, joints.elbowRight.y);
-        stage.lineTo(joints.handRight.x, joints.handRight.y);
-        stage.stroke();
-
-        stage.beginPath();
-        stage.moveTo(joints.footLeft.x, joints.footLeft.y);
-        stage.lineTo(joints.kneeLeft.x, joints.kneeLeft.y);
-        stage.lineTo(joints.hips.x, joints.hips.y);
-        stage.lineTo(joints.kneeRight.x, joints.kneeRight.y);
-        stage.lineTo(joints.footRight.x, joints.footRight.y);
-        stage.stroke();
-
-        stage.strokeRect(joints.shoulders.x - 2, joints.shoulders.y - 8, 5, 5);
-      };
-
-      var stickmen = {
-        stickman1: new Stickman() // he has no friends
-      };*/
-
-      var renderLevel = function (level) { // draw the level using data from an array
+      var initLevel = function (level) { // draw the level using data from an array
         level = levelData[level];
-        var horizontal = Math.floor(gameSettings.width / 16);
-        var vertical = Math.floor(gameSettings.height / 16);
+        var levelWidth = Math.floor(gameSettings.width / 16);
+        var levelHeight = Math.floor(gameSettings.height / 16);
         var tileset = level.tileset;
-        var data = level.multiple ? randomInt(5) : level.data[0]; // pick random level 0-4 unless there is only one (e.g. title screen) 
-        for (var y = 0; y < vertical; y++) {
-          for (var x = 0; x < horizontal; x++) {
+        var data = level.data;
+        levelCanvas.width = levelWidth * 16;
+        levelCanvas.height = levelHeight * 16;
+        for (var y = 0; y < levelHeight; y++) {
+          for (var x = 0; x < levelWidth; x++) {
             var curTile = parseInt(data[y].charAt(x)) * 16;
-            if (curTile) {
-              stage.drawImage(
-                tileset,
-                curTile,
-                0,
-                16,
-                16,
-                x * 16,
-                y * 16,
-                16,
-                16
-              );
-            }
+            if (curTile) levelStage.drawImage(tileset, curTile, 0, 16, 16, x * 16, y * 16, 16, 16);
           }
         }
       };
 
-      /*var renderStickmen = function () {
-        for (var s in stickmen) {
-          stickmen[s].doPhysics();
-          stickmen[s].draw();
-        }
-      };*/
-
-      return function (level) {
-        renderLevel(level);
-        //renderStickmen(); // bruh
+      var drawLevel = function () {
+        stage.drawImage(levelCanvas, 0, 0);
       };
+
+      return (function () {
+        var oldLevel;
+
+        return function (level) {
+          if (oldLevel !== level) initLevel(level);
+          drawLevel();
+          oldLevel = level;
+        }
+      })();
     })();
 
-    var map = (function () { // draw map using similar method to level drawing
-      var horizontal = Math.floor(gameSettings.width / 16) + 1;
-      var vertical = Math.floor(gameSettings.height / 16) - 10;
-      var offset = 0;
+    var map = (function (mapData) { // draw map using similar method to level drawing
+      var mapCanvas = document.createElement('canvas');
+      var mapStage = mapCanvas.getContext('2d');
       var tileset = {
         bg: tilesets.map,
         fg: tilesets.mapIcons
       };
+      var mapHeight = 17;
+      var offset = 0;
       var scrollRight = gameSettings.width - 125;
       var scrollLeft = 125;
+      var offsetLimit = mapData.width * 16 - gameSettings.width;
+      var tiles = {
+        bg: mapData.bg,
+        fg: mapData.fg
+      };
+      var lvls = mapData.lvls;
+      var lvlButtons = {};
+      var hovering = [];
 
-      return function (mapData) {
-        var offsetLimit = mapData.width * 16 - gameSettings.width;
-        var bgTiles = mapData.bg;
-        var fgTiles = mapData.fg;
+      var initButtons = function () {
+        for (var l in lvls) { // create level buttons
+          var cur = lvls[l];
+          lvlButtons[l] = new CButton({
+            x: cur.x,
+            y: cur.y,
+            width: 21,
+            height: 21,
+            bgColor: 'rgba(0, 0, 0, 0)',
+            bgHoverColor: 8,
+            border: false,
+            borderColor: 1,
+            borderWidth: 1,
+            id: l,
+            hover: function () {
+              hovering.push(this.id);
+              this.border = true;
+            },
+            notHover: function () {
+              this.border = false;
+            },
+            click: function () {
+              // bruh
+            }
+          });
+        }
+      };
 
-        for (var y = 0; y < vertical; y++) {
-          for (var x = 0; x < horizontal; x++) {
-            var curBg = bgTiles[y].charAt(x + Math.floor(offset / 16));
-            var curFg = fgTiles[y].charAt(x + Math.floor(offset / 16));
+      var initMap = function () { // draw map once
+        mapCanvas.width = mapData.width * 16;
+        mapCanvas.height = mapHeight * 16;
+        for (var y = 0; y < mapHeight; y++) {
+          for (var x = 0; x < mapData.width; x++) {
+            var curBg = tiles.bg[y].charAt(x + Math.floor(offset / 16));
+            var curFg = tiles.fg[y].charAt(x + Math.floor(offset / 16));
             var curBgTile = (isNaN(parseInt(curBg)) ? convertBase(curBg, 36, 10) : parseInt(curBg)) * 16;
             var curFgTile = (isNaN(parseInt(curFg)) ? convertBase(curFg, 36, 10) : parseInt(curFg)) * 16;
-            if (curBgTile) stage.drawImage(tileset.bg, curBgTile, 0, 16, 16, x * 16 - (Math.floor(offset) % 16), y * 16, 16, 16); // draw bg
-            if (curFgTile) stage.drawImage(tileset.fg, curFgTile, 0, 16, 16, x * 16 - (Math.floor(offset) % 16), y * 16, 16, 16); // draw fg
+            if (curBgTile) mapStage.drawImage(tileset.bg, curBgTile, 0, 16, 16, x * 16, y * 16, 16, 16); // draw bg
+            if (curFgTile) mapStage.drawImage(tileset.fg, curFgTile, 0, 16, 16, x * 16, y * 16, 16, 16); // draw fg
           }
         }
-        if (mouse.y > 0 && mouse.y < vertical * 16) { // if within y bounds of map, allow scroll
+      };
+
+      var drawMap = function () { // draw map image
+        stage.drawImage(mapCanvas, 0 - offset, 0);
+      };
+
+      var drawLevels = function () { // draw map levels
+        hovering = [];
+        for (var l in lvlButtons) {
+          var cur = lvlButtons[l];
+          var lvl = mapData.lvls[cur.id];
+          if (lvl.visible) {
+            var before = lvl.before;
+            cur.x = lvls[l].x - offset;
+            if (before && lvl.line) for (var i = 0; i < before.length; i++) drawDottedLine(cur.x, cur.y, mapData.lvls[before[i]].x - offset, mapData.lvls[before[i]].y, 20);
+            cur.draw();
+            stage.fillStyle = lvl.inn ? colors[19] : colors[1];
+            if (lvl.dot) stage.fillRect(cur.x - 4, cur.y - 4, 8, 8);
+          }
+        }
+        if (hovering[0]) { // this feels like a really weird way to do this but it works ¯\_(ツ)_/¯
+          var textWidth = stage.measureText(hovering[0]).width;
+          drawText({ text: hovering[0], size: 16, x: mouse.x - textWidth / 2 < 0 ? textWidth / 2 : mouse.x, y: mouse.y < 20 ? 10 : mouse.y - 8, center: true });
+        }
+      };
+
+      var doScrolling = function () { // mouse scrolling
+        if (mouse.y > 0 && mouse.y < mapHeight * 16) { // if within y bounds of map, allow scroll
           if (mouse.x > scrollRight && mouse.x <= gameSettings.width) offset += ms * ((mouse.x - scrollRight) / 100); // <-- shit math
           if (mouse.x < scrollLeft && mouse.x >= 0 && offset > 0) offset -= ms * ((scrollLeft - mouse.x) / 100);
         }
@@ -492,8 +640,20 @@ var RPG_TEST = (function () {
 
         drawText({ text: (offset === 0 ? '' : '<<'), x: 20, y: gameSettings.height / 4, center: true }); // left/right scroll indicators
         drawText({ text: (offset === offsetLimit ? '' : '>>'), x: gameSettings.width - 20, y: gameSettings.height / 4, center: true });
+      };
+
+      return {
+        init: function() {
+          initButtons();
+          initMap();
+        },
+        draw: function () {
+          drawMap();
+          drawLevels();
+          doScrolling();
+        }
       }
-    })();
+    })(mapData);
 
     var inventoryBar = (function () { // unfinished crap
       var buttons = {
@@ -520,6 +680,8 @@ var RPG_TEST = (function () {
         if (item) {
           switch (item.type) {
             case 'weapon':
+              var accessories = inventoryData[section][slotId].accessories.filter(Boolean).length;
+
               info = [
                 item.name + ' ' + item.lvl,
                 item.dmgType + ' type ' + item.type,
@@ -532,6 +694,8 @@ var RPG_TEST = (function () {
                   item.magic + ' elemental cost'
                 );
               }
+
+              if (accessories > 0) info.push('&' + accessories + (accessories > 1 ? ' accessories attached' : ' accessory attached'));
               break;
             case 'accessory':
               info = [
@@ -602,15 +766,25 @@ var RPG_TEST = (function () {
         drawText({ text: 'accessories', size: 10, color: 20, x: 180, y: gameSettings.height - 72, outline: true });
         if (isHovering) {
           for (var i = 0; i < info.length; i++) {
+            var cur = info[i]; // should be using a foreach loop hnugbmnhbtfhmcvyb
+            var curColor = 20;
+            var curOutlineColor = 8;
+            var curOutlineWidth = 3;
+            if (cur.charAt(0) === '&') {
+              cur = cur.slice(1);
+              curColor = 2;
+              curOutlineColor = 2;
+              curOutlineWidth = 1;
+            }
             drawText({
-              text: info[i],
+              text: cur,
               size: (i ? 13 : 16),
-              color: 20,
+              color: curColor,
               x: gameSettings.width - 475,
               y: gameSettings.height - 142 + i * 25 + (i ? 5 : 0),
               outline: true,
-              outlineColor: 8,
-              outlineWidth: 3
+              outlineColor: curOutlineColor,
+              outlineWidth: curOutlineWidth
             });
           }
         }
@@ -1028,44 +1202,59 @@ var RPG_TEST = (function () {
     var lastDelta = 0;
     var fps;
     var ms;
-    return function (delta) {
-      ms = delta - lastDelta; // calculate frame interval
-      fps = Math.floor(1000 / ms); // not actually fps, just frame interval converted into screen refresh rate
-      stage.clearRect(0, 0, gameSettings.width, gameSettings.height); // clear screen
 
-      switch (STATE) { // run functions based on game state
-        case 'title':
-          level(0);
-          title();
-          break;
-        case 'credits':
-          level(0);
-          credits();
-          break;
-        case 'newGame':
-          level(0);
-          newGame();
-          break;
-        case 'map':
-          map(mapData);
-          inventoryBar();
-          break;
-        default:
-          invalidState(); // if current state does not exist...
+    return {
+      init: function() {
+        map.init();
+      },
+      loop: function (delta) {
+        ms = delta - lastDelta; // calculate frame interval
+        fps = Math.floor(1000 / ms); // not actually fps, just frame interval converted into screen refresh rate
+        stage.clearRect(0, 0, gameSettings.width, gameSettings.height); // clear screen
+  
+        switch (STATE) { // run functions based on game state
+          case 'title':
+            level('title');
+            title();
+            break;
+          case 'credits':
+            level('title');
+            credits();
+            break;
+          case 'newGame':
+            level('title');
+            newGame();
+            break;
+          case 'map':
+            map.draw();
+            inventoryBar();
+            break;
+          default:
+            invalidState(); // if current state does not exist...
+        }
+  
+        drawText({ text: 'FPS: ' + fps, size: 16, x: 0, y: 12 });
+        /*drawText({ text: 'MS: ' + ms, x: 0, y: 40 });*/
+        lastDelta = delta;
+        requestAnimationFrame(game.loop); // and again and again and again and again and again and again...
       }
-
-      drawText({ text: 'FPS: ' + fps, x: 0, y: 20 });
-      /*drawText({ text: 'MS: ' + ms, x: 0, y: 40 });*/
-      lastDelta = delta;
-      requestAnimationFrame(gameLoop); // and again and again and again and again and again and again...
-    };
+    }
   })();
+
+  var init = function () {
+    console.log('rpg-test ' + gameSettings.version);
+    console.log('authors: ' + gameSettings.authors);
+    setupMouseEventListeners();
+    setupCanvas();
+    setupAudio();
+    game.init();
+  };
 
   return {
     go: function () { // called once document body loads
       init();
       document.body.appendChild(canvas);
-      requestAnimationFrame(gameLoop);
+      requestAnimationFrame(game.loop);
     }
   };
 })();
