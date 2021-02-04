@@ -18,11 +18,14 @@ var RPG_TEST = (function () {
   };
 
   var setupMouseEventListeners = function () {
-    document.addEventListener('mousemove', function (e) {
+    var mouseMove = function(e) {
       var coords = getMousePos(canvas, e);
       mouse.x = coords.x;
       mouse.y = coords.y;
-    });
+    };
+
+    document.addEventListener('mousemove', mouseMove);
+    document.addEventListener('touchmove', mouseMove);
     canvas.addEventListener('contextmenu', function (e) {
       e.preventDefault();
     });
@@ -32,8 +35,15 @@ var RPG_TEST = (function () {
         mouseClick();
       }
     });
+    canvas.addEventListener('touchstart', function (e) {
+      mouse.down = true;
+      mouseClick();
+    });
     canvas.addEventListener('mouseup', function (e) {
       if (e.button === 0) mouse.down = false;
+    });
+    canvas.addEventListener('touchend', function (e) {
+      mouse.down = false;
     });
     canvas.addEventListener('mouseleave', function () {
       mouse.down = false;
@@ -166,8 +176,8 @@ var RPG_TEST = (function () {
     var scaleX = gameSettings.width / rect.width;
     var scaleY = gameSettings.height / rect.height;
     return {
-      x: Math.floor(e.clientX * scaleX - rect.left * scaleX),
-      y: Math.floor(e.clientY * scaleY - rect.top * scaleY)
+      x: Math.floor((e.clientX || e.touches[0].clientX) * scaleX - rect.left * scaleX),
+      y: Math.floor((e.clientY || e.touches[0].clientY) * scaleY - rect.top * scaleY)
     };
   };
 
