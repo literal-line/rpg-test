@@ -7,7 +7,7 @@ var RPG_TEST = (function () {
   var canvas = document.createElement('canvas');
   var stage = canvas.getContext('2d');
   var gameSettings = {
-    version: 'v0.1-20210203-2013est',
+    version: 'v0.1-20210203-2021est',
     authors: ['Literal Line'], // in case you mod or whatever
     width: 768,
     height: 432,
@@ -50,6 +50,17 @@ var RPG_TEST = (function () {
     canvas.style.imageRendering = gameSettings.aa ? 'auto' : '-moz-crisp-edges';
     stage.imageSmoothingEnabled = gameSettings.aa;
     stage.textRendering = 'auto';
+
+    if (window.location.search === '?fullscreen') {
+      fullscreen();
+      window.addEventListener('resize', fullscreen);
+      window.addEventListener('orientationchange', fullscreen);
+    }
+  };
+
+  var fullscreen = function () {
+    canvas.style.width = window.innerWidth + 'px';
+    canvas.style.height = window.innerHeight + 'px';
   };
 
   var setupAudio = function () { // prevents sfx from interrupting sound in other tabs on certain browsers
@@ -643,7 +654,7 @@ var RPG_TEST = (function () {
       };
 
       return {
-        init: function() {
+        init: function () {
           initButtons();
           initMap();
         },
@@ -1204,14 +1215,14 @@ var RPG_TEST = (function () {
     var ms;
 
     return {
-      init: function() {
+      init: function () {
         map.init();
       },
       loop: function (delta) {
         ms = delta - lastDelta; // calculate frame interval
         fps = Math.floor(1000 / ms); // not actually fps, just frame interval converted into screen refresh rate
         stage.clearRect(0, 0, gameSettings.width, gameSettings.height); // clear screen
-  
+
         switch (STATE) { // run functions based on game state
           case 'title':
             level('title');
@@ -1232,7 +1243,7 @@ var RPG_TEST = (function () {
           default:
             invalidState(); // if current state does not exist...
         }
-  
+
         drawText({ text: 'FPS: ' + fps, size: 16, x: 0, y: 12 });
         /*drawText({ text: 'MS: ' + ms, x: 0, y: 40 });*/
         lastDelta = delta;
