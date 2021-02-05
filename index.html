@@ -2,7 +2,7 @@
   rpg-test by Literal line
   more at quique.gq
 
-  v0.1-20210203-2102est
+  v0.1-20210204-2308est
 -->
 <!DOCTYPE html>
 <html>
@@ -11,8 +11,8 @@
   <meta name="viewport" content="width=device-width" />
   <title>rpg-test</title>
   <link rel="shortcut icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" type="text/css" href="style.css?ver=0.1-20210203-2102est" />
-  <link rel="manifest" href="manifest.json?ver=0.1-20210203-2102est">
+  <link rel="stylesheet" type="text/css" href="style.css?ver=0.1-20210204-2308est" />
+  <link rel="manifest" href="manifest.json?ver=0.1-20210204-2308est">
   <style>
     #embedBox>* {
       padding: 5px;
@@ -48,28 +48,7 @@
     <p><a href="javascript:embedGame()" style="border: 3px double #d1401f; padding: 5px">Copy HTML code</a></p>
     <p id="copyMsg" style="display: none; color: #d1401f">Copied to clipboard!</p>
   </div>
-  <script id="rpgTest" src="rpg-test.js?ver=0.1-20210203-2102est"></script>
-  <script>
-    function copyString(str) {
-      var textarea = document.createElement('textarea');
-      textarea.textContent = str;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      textarea.remove();
-    }
-
-    function embedGame() {
-      var iframeCode = '<iframe width="%widthValue%" height="%heightValue%" src="http://rpg-test.quique.gq/?fullscreen"></iframe>';
-      var widthValue = document.getElementById('widthValue').value;
-      var heightValue = document.getElementById('heightValue').value;
-      if (!widthValue) widthValue = 768;
-      if (!heightValue) heightValue = 432;
-      iframeCode = iframeCode.replace('%widthValue%', widthValue);
-      iframeCode = iframeCode.replace('%heightValue%', heightValue);
-      copyString(iframeCode);
-      document.getElementById('copyMsg').style.display = 'block';
-    }
-  </script>
+  <script id="rpgTest" src="rpg-test.js?ver=0.1-20210204-2308est"></script>
+  <script src="embed.js?ver=0.1-20210204-2308est"></script>
 </body>
 </html>
