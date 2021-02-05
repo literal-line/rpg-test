@@ -33,7 +33,7 @@ canvas {
 }
 
 #preload {
-	position: absolute;
-	z-index: -999;
+	position: fixed;
+	left: 200vw;
 	opacity: 0;
 }

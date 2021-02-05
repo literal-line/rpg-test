@@ -1,3 +1,8 @@
+if (window.location.search === '?fullscreen') {
+    document.body.style.overflow = 'hidden';
+    document.getElementById('embedBox').style.display = 'none';
+}
+
 function copyString(str) {
     var textarea = document.createElement('textarea');
     textarea.textContent = str;
