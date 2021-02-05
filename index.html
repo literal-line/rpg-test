@@ -14,9 +14,13 @@
   <link rel="stylesheet" type="text/css" href="style.css?ver=0.1-20210204-2323est" />
   <link rel="manifest" href="manifest.json?ver=0.1-20210204-2323est">
   <style>
-    #embedBox>* {
+    #embedBox > * {
       padding: 5px;
       margin: 5px;
+    }
+
+    #embedBox div {
+      display: inline-block;
     }
   </style>
 </head>
@@ -40,11 +44,8 @@
   </div>
   <div id="embedBox" style="padding: 25px;">
     <p>Embed this game on your site!</p>
-    <p style="margin: 15px">
-      Width: <input id="widthValue" type="number" placeholder="768">
-      &nbsp;
-      Height: <input id="heightValue" type="number" placeholder="432">
-    </p>
+    <div>Width: <input id="widthValue" type="number" placeholder="768"></div>
+    <div>Height: <input id="heightValue" type="number" placeholder="432"></div>
     <p><a href="javascript:embedGame()" style="border: 3px double #d1401f; padding: 5px">Copy HTML code</a></p>
     <p id="copyMsg" style="display: none; color: #d1401f">Copied to clipboard!</p>
   </div>
