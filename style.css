@@ -20,6 +20,11 @@ body {
 	text-align: center;
 }
 
+a {
+	text-decoration: none;
+	color: #d1401f;
+}
+
 canvas {
 	/*border: 1px solid #FFFFFF;*/
 	/*cursor: url('./assets/cursor.png'), auto;*/

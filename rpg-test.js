@@ -18,14 +18,13 @@ var RPG_TEST = (function () {
   };
 
   var setupMouseEventListeners = function () {
-    var mouseMove = function(e) {
+    var mouseMove = function(e) { // might do touch events later
       var coords = getMousePos(canvas, e);
       mouse.x = coords.x;
       mouse.y = coords.y;
     };
 
     document.addEventListener('mousemove', mouseMove);
-    document.addEventListener('touchmove', mouseMove);
     canvas.addEventListener('contextmenu', function (e) {
       e.preventDefault();
     });
@@ -35,16 +34,8 @@ var RPG_TEST = (function () {
         mouseClick();
       }
     });
-    canvas.addEventListener('touchstart', function (e) {
-      mouseMove(e);
-      mouse.down = true;
-      mouseClick();
-    });
     canvas.addEventListener('mouseup', function (e) {
       if (e.button === 0) mouse.down = false;
-    });
-    canvas.addEventListener('touchend', function (e) {
-      mouse.down = false;
     });
     canvas.addEventListener('mouseleave', function () {
       mouse.down = false;
@@ -177,8 +168,8 @@ var RPG_TEST = (function () {
     var scaleX = gameSettings.width / rect.width;
     var scaleY = gameSettings.height / rect.height;
     return {
-      x: Math.floor((e.clientX || e.touches[0].clientX) * scaleX - rect.left * scaleX),
-      y: Math.floor((e.clientY || e.touches[0].clientY) * scaleY - rect.top * scaleY)
+      x: Math.floor(e.clientX * scaleX - rect.left * scaleX),
+      y: Math.floor(e.clientY * scaleY - rect.top * scaleY)
     };
   };
 
@@ -1275,7 +1266,7 @@ var RPG_TEST = (function () {
   return {
     go: function () { // called once document body loads
       init();
-      document.body.appendChild(canvas);
+      document.body.insertBefore(canvas, document.getElementById('preload'));
       requestAnimationFrame(game.loop);
     }
   };

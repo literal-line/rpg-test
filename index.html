@@ -13,6 +13,12 @@
   <link rel="shortcut icon" type="image/png" href="favicon.png">
   <link rel="stylesheet" type="text/css" href="style.css?ver=0.1-20210203-2102est" />
   <link rel="manifest" href="manifest.json?ver=0.1-20210203-2102est">
+  <style>
+    #embedBox>* {
+      padding: 5px;
+      margin: 5px;
+    }
+  </style>
 </head>
 <body onload="RPG_TEST.go()">
   <div id="preload">
@@ -32,6 +38,38 @@
       <source src="./assets/casherror.wav" type="audio/wav">
     </audio>
   </div>
-  <script src="rpg-test.js?ver=0.1-20210203-2102est"></script>
+  <div id="embedBox" style="padding: 25px;">
+    <p>Embed this game on your site!</p>
+    <p style="margin: 15px">
+      Width: <input id="widthValue" type="number" placeholder="768">
+      &nbsp;
+      Height: <input id="heightValue" type="number" placeholder="432">
+    </p>
+    <p><a href="javascript:embedGame()" style="border: 3px double #d1401f; padding: 5px">Copy HTML code</a></p>
+    <p id="copyMsg" style="display: none; color: #d1401f">Copied to clipboard!</p>
+  </div>
+  <script id="rpgTest" src="rpg-test.js?ver=0.1-20210203-2102est"></script>
+  <script>
+    function copyString(str) {
+      var textarea = document.createElement('textarea');
+      textarea.textContent = str;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      textarea.remove();
+    }
+
+    function embedGame() {
+      var iframeCode = '<iframe width="%widthValue%" height="%heightValue%" src="http://rpg-test.quique.gq/?fullscreen"></iframe>';
+      var widthValue = document.getElementById('widthValue').value;
+      var heightValue = document.getElementById('heightValue').value;
+      if (!widthValue) widthValue = 768;
+      if (!heightValue) heightValue = 432;
+      iframeCode = iframeCode.replace('%widthValue%', widthValue);
+      iframeCode = iframeCode.replace('%heightValue%', heightValue);
+      copyString(iframeCode);
+      document.getElementById('copyMsg').style.display = 'block';
+    }
+  </script>
 </body>
 </html>
