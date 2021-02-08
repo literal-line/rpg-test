@@ -821,8 +821,8 @@ var RPG_TEST = (function () {
       };
 
       var drawInfo = function () {
-        inventoryStage.drawText({ text: 'weapon', size: 10, color: 20, x: 180, y: 40, outline: true });
-        inventoryStage.drawText({ text: 'accessories', size: 10, color: 20, x: 180, y: 30, outline: true });
+        inventoryStage.drawText({ text: 'weapon', size: 10, color: 20, x: 180, y: 48, outline: true });
+        inventoryStage.drawText({ text: 'accessories', size: 10, color: 20, x: 180, y: 88, outline: true });
         if (isHovering) {
           for (var i = 0; i < info.length; i++) {
             var cur = info[i]; // should be using a foreach loop hnugbmnhbtfhmcvyb
@@ -840,7 +840,7 @@ var RPG_TEST = (function () {
               size: (i ? 13 : 16),
               color: curColor,
               x: inventoryCanvas.width - 475,
-              y: 20 + i * 25 + (i ? 5 : 0),
+              y: 18 + i * 25 + (i ? 5 : 0),
               outline: true,
               outlineColor: curOutlineColor,
               outlineWidth: curOutlineWidth
