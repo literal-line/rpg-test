@@ -7,7 +7,7 @@ var RPG_TEST = (function () {
   var canvas = document.createElement('canvas');
   var stage = canvas.getContext('2d');
   var gameSettings = {
-    version: 'v0.1-20210204-2323est',
+    version: 'v0.1-20210207-2343est',
     authors: ['Literal Line'], // in case you mod or whatever
     width: 768,
     height: 432,
@@ -18,7 +18,7 @@ var RPG_TEST = (function () {
   };
 
   var setupMouseEventListeners = function () {
-    var mouseMove = function(e) { // might do touch events later
+    var mouseMove = function (e) { // might do touch events later
       var coords = getMousePos(canvas, e);
       mouse.x = coords.x;
       mouse.y = coords.y;
@@ -267,8 +267,8 @@ var RPG_TEST = (function () {
     var mapData = {
       width: 144,
       bg: [
-        'dddddd45a0000455ag0000000gb076ddddddddddddddddddddddddddddd8000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-        'dddddddd45a0000g45a00g00076gbdddddddddddddddddddddddddddddd8000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+        'dddddd45a0000455ag0000000gb076ddddddddddddddddddddddddd455a0000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+        'dddddddd45a0000g45a00g00076gbddddddddddddddddddddddddddddd4a000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
         'dddddddddd4555a00045555556076ddddddd12223dddd122223ddddddddb000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
         'ddddddddeeee00455ag0000000gbddddd122c00092222c00009223dddddb000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
         'dddddeeeee000000b455a0g00076dddd1c000000000000000000093ddddb000075555a0000000075555555a000000000000000000000000000000000000000000000000000000000',
@@ -276,8 +276,8 @@ var RPG_TEST = (function () {
         'ddeee0000000000000455a0g0009222c000000000000000000000000000000008ddddb0755555676e8gbe4a4a0000000000000000000000000000000000000000000000000000000',
         'dee0000000000000000008000g000gb0000000000000000000000075555a00008ddddb767555556ee92cee4500000000000000000000000000000000000000000000000000000000',
         'ee00000000000000000004555a0000b000000000000000000000008ddddb00008jjjj4676dddddeeeeeeeee000000000000000555550000000000000000000000000000000000000',
-        '2222300000dd000000000000045a076000045a00000000000000008ddddb00008jjjj456dddddddeeeeeeed000000000000000000000000000000000000000000000000000000000',
-        '000093000dd0d0000000012300045600000004555555555555a0076ddddb00076jjjjdddddddddddddddddd000000000000000000000000000000000000000000000000000000000',
+        '22223000000dd00000000000045a076000045a00000000000000008ddddb00008jjjj456dddddddeeeeeeed000000000000000000000000000000000000000000000000000000000',
+        '0000930000dd0d000000012300045600000004555555555555a0076ddddb00076jjjjdddddddddddddddddd000000000000000000000000000000000000000000000000000000000',
         '00000b000000000000000b093000000000000000000000000045560jjjj45556ijjjjiddddddddddddddddd000000000000000000000000000000000000000000000000000000000',
         '555556000000000000000b009230000000000000000000000000007jjjj55556diiiidddddddddddddddddd000000000000000000000000000000000000000000000000000000000',
         '000000000000000000001cg00092223000000000000000000000008iiiidddddddddddddddddddddddddddd000000000000000000000000000000000000000000000000000000000',
@@ -295,8 +295,8 @@ var RPG_TEST = (function () {
         '000000000000000111030000000700007000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
         '000000000000000010101077000000070000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
         '000000000000000000000000007077070007700070070000770007000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-        '000001000100100000000020000070000070007077707707777007000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-        '001000000001000000000000001000000000100000000000000770000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+        '000001000010010000000020000070000070007077707707777007000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+        '001000000000100000000000001000000000100000000000000770000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
         '100000100000000000001070000000000000001101110101010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
         '000000100000000001111000700010000000000000000110001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
         '000000000000001111110000007000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
@@ -322,62 +322,70 @@ var RPG_TEST = (function () {
           visible: true
         },
         'Plains 2': {
-          x: 160,
-          y: 205,
+          x: 165,
+          y: 200,
           before: ['Plains 1'],
           line: true,
           dot: true,
           visible: true
         },
         'Plains 3': {
-          x: 115,
-          y: 145,
+          x: 138,
+          y: 143,
           before: ['Plains 2'],
           line: true,
           dot: true,
           visible: true
         },
-        'Lake': {
-          x: 178,
-          y: 145,
-          before: ['Plains 5'],
-          line: true,
-          dot: true,
-          visible: true
-        },
         'Beach 1': {
-          x: 80,
-          y: 110,
+          x: 145,
+          y: 95,
           before: ['Plains 3'],
           line: true,
           dot: true,
           visible: true
         },
         'Beach 2': {
-          x: 105,
+          x: 95,
           y: 70,
           before: ['Beach 1'],
           line: true,
           dot: true,
           visible: true
         },
+        'Beach 3': {
+          x: 50,
+          y: 105,
+          before: ['Beach 2'],
+          line: true,
+          dot: true,
+          visible: true
+        },
         'Plains 4': {
-          x: 230,
-          y: 170,
+          x: 240,
+          y: 175,
           before: ['Plains 2'],
           line: true,
           dot: true,
           visible: true
         },
         'Plains 5': {
-          x: 190,
-          y: 100,
+          x: 212,
+          y: 110,
           before: ['Plains 3', 'Plains 4'],
           line: true,
           dot: true,
           visible: true
         },
-        'Castle Gate': {
+        'Lake': {
+          x: 192,
+          y: 150,
+          before: ['Plains 5'],
+          line: true,
+          dot: true,
+          visible: true
+        },
+        'Castle Grounds': {
           x: 290,
           y: 155,
           before: ['Plains 4'],
@@ -388,7 +396,7 @@ var RPG_TEST = (function () {
         'Cave 1': {
           x: 312,
           y: 106,
-          before: ['Castle Gate'],
+          before: ['Castle Grounds'],
           line: true,
           dot: false,
           visible: true
@@ -397,7 +405,7 @@ var RPG_TEST = (function () {
           x: 392,
           y: 42,
           before: ['Cave 1'],
-          line: false,
+          line: true,
           dot: false,
           visible: true
         },
@@ -436,7 +444,7 @@ var RPG_TEST = (function () {
         'Castle': {
           x: 360,
           y: 155,
-          before: ['Castle Gate'],
+          before: ['Castle Grounds'],
           line: true,
           visible: true,
           dot: false
@@ -557,13 +565,24 @@ var RPG_TEST = (function () {
     })();
 
     var map = (function (mapData) { // draw map using similar method to level drawing
-      var mapCanvas = document.createElement('canvas');
-      var mapStage = mapCanvas.getContext('2d');
+      var mapCanvases = [
+        document.createElement('canvas'),
+        document.createElement('canvas'),
+        document.createElement('canvas'),
+        document.createElement('canvas')
+      ];
+      var mapStages = [
+        mapCanvases[0].getContext('2d'),
+        mapCanvases[1].getContext('2d'),
+        mapCanvases[2].getContext('2d'),
+        mapCanvases[3].getContext('2d')
+      ];
       var tileset = {
         bg: tilesets.map,
         fg: tilesets.mapIcons
       };
       var mapHeight = 17;
+      var mapFrame = 0;
       var offset = 0;
       var scrollRight = gameSettings.width - 125;
       var scrollLeft = 125;
@@ -582,8 +601,8 @@ var RPG_TEST = (function () {
           lvlButtons[l] = new CButton({
             x: cur.x,
             y: cur.y,
-            width: 21,
-            height: 21,
+            width: 27,
+            height: 27,
             bgColor: 'rgba(0, 0, 0, 0)',
             bgHoverColor: 8,
             border: false,
@@ -605,22 +624,27 @@ var RPG_TEST = (function () {
       };
 
       var initMap = function () { // draw map once
-        mapCanvas.width = mapData.width * 16;
-        mapCanvas.height = mapHeight * 16;
-        for (var y = 0; y < mapHeight; y++) {
-          for (var x = 0; x < mapData.width; x++) {
-            var curBg = tiles.bg[y].charAt(x + Math.floor(offset / 16));
-            var curFg = tiles.fg[y].charAt(x + Math.floor(offset / 16));
-            var curBgTile = (isNaN(parseInt(curBg)) ? convertBase(curBg, 36, 10) : parseInt(curBg)) * 16;
-            var curFgTile = (isNaN(parseInt(curFg)) ? convertBase(curFg, 36, 10) : parseInt(curFg)) * 16;
-            if (curBgTile) mapStage.drawImage(tileset.bg, curBgTile, 0, 16, 16, x * 16, y * 16, 16, 16); // draw bg
-            if (curFgTile) mapStage.drawImage(tileset.fg, curFgTile, 0, 16, 16, x * 16, y * 16, 16, 16); // draw fg
+        for (var i = 0; i < mapCanvases.length; i++) {
+          var curCanvas = mapCanvases[i];
+          var curStage = mapStages[i];
+          curCanvas.width = mapData.width * 16;
+          curCanvas.height = mapHeight * 16;
+          for (var y = 0; y < mapHeight; y++) {
+            for (var x = 0; x < mapData.width; x++) {
+              var curBg = tiles.bg[y].charAt(x);
+              var curFg = tiles.fg[y].charAt(x);
+              var curBgTile = (isNaN(parseInt(curBg)) ? convertBase(curBg, 36, 10) : parseInt(curBg)) * 16;
+              var curFgTile = (isNaN(parseInt(curFg)) ? convertBase(curFg, 36, 10) : parseInt(curFg)) * 16;
+              if (curBgTile) curStage.drawImage(tileset.bg, curBgTile, curBg === 'i' || curBg === 'j' ? i % 4 * 16 : 0, 16, 16, x * 16, y * 16, 16, 16); // draw bg
+              if (curFgTile) curStage.drawImage(tileset.fg, curFgTile, 0, 16, 16, x * 16, y * 16, 16, 16); // draw fg
+            }
           }
         }
       };
 
       var drawMap = function () { // draw map image
-        stage.drawImage(mapCanvas, 0 - offset, 0);
+        stage.drawImage(mapCanvases[mapFrame % 4], 0 - Math.floor(offset), 0);
+        if (timer - lastTimer > 0) mapFrame++;
       };
 
       var drawLevels = function () { // draw map levels
@@ -630,8 +654,8 @@ var RPG_TEST = (function () {
           var lvl = mapData.lvls[cur.id];
           if (lvl.visible) {
             var before = lvl.before;
-            cur.x = lvls[l].x - offset;
-            if (before && lvl.line) for (var i = 0; i < before.length; i++) drawDottedLine(cur.x, cur.y, mapData.lvls[before[i]].x - offset, mapData.lvls[before[i]].y, 20);
+            cur.x = lvls[l].x - Math.floor(offset);
+            if (before && lvl.line) for (var i = 0; i < before.length; i++) drawDottedLine(cur.x, cur.y, mapData.lvls[before[i]].x - Math.floor(offset), mapData.lvls[before[i]].y, 20);
             cur.draw();
             stage.fillStyle = lvl.inn ? colors[19] : colors[1];
             if (lvl.dot) stage.fillRect(cur.x - 4, cur.y - 4, 8, 8);
@@ -645,7 +669,7 @@ var RPG_TEST = (function () {
 
       var doScrolling = function () { // mouse scrolling
         if (mouse.y > 0 && mouse.y < mapHeight * 16) { // if within y bounds of map, allow scroll
-          if (mouse.x > scrollRight && mouse.x <= gameSettings.width) offset += ms * ((mouse.x - scrollRight) / 100); // <-- shit math
+          if (mouse.x > scrollRight && mouse.x <= gameSettings.width) offset += ms * ((mouse.x - scrollRight) / 100);
           if (mouse.x < scrollLeft && mouse.x >= 0 && offset > 0) offset -= ms * ((scrollLeft - mouse.x) / 100);
         }
         if (offset < 0) offset = 0;
@@ -835,8 +859,8 @@ var RPG_TEST = (function () {
         }
       };
 
-      var setupWeaponButtons = function () {
-        for (var i = 0; i < 4; i++) { // weapons
+      var setupWeaponButtons = function () { // weapons
+        for (var i = 0; i < 4; i++) {
           buttons.inventory.push(new CButton({
             x: 20 + i * 45,
             y: gameSettings.height - 100,
@@ -851,9 +875,9 @@ var RPG_TEST = (function () {
         }
       };
 
-      var setupAccessoryButtons = function () {
+      var setupAccessoryButtons = function () { // accessories
         var i = 0;
-        for (var x = 0; x < 4; x++) { // accessories
+        for (var x = 0; x < 4; x++) {
           for (var y = 0; y < 2; y++) {
             buttons.inventory.push(new CButton({
               x: 20 + x * 45,
@@ -1215,6 +1239,12 @@ var RPG_TEST = (function () {
     var lastDelta = 0;
     var fps;
     var ms;
+    var timer = 0;
+    var lastTimer;
+
+    setInterval(function() {
+      timer++;
+    }, 100);
 
     return {
       init: function () {
@@ -1249,6 +1279,7 @@ var RPG_TEST = (function () {
         drawText({ text: 'FPS: ' + fps, size: 16, x: 0, y: 12 });
         /*drawText({ text: 'MS: ' + ms, x: 0, y: 40 });*/
         lastDelta = delta;
+        lastTimer = timer;
         requestAnimationFrame(game.loop); // and again and again and again and again and again and again...
       }
     }
