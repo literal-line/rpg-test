@@ -7,7 +7,7 @@ var RPG_TEST = (function () {
   var canvas = document.createElement('canvas');
   var stage = canvas.getContext('2d');
   var gameSettings = {
-    version: 'v0.1-20210207-2343est',
+    version: 'v0.1-20210208-0512est',
     authors: ['Literal Line'], // in case you mod or whatever
     width: 768,
     height: 432,
@@ -190,13 +190,13 @@ var RPG_TEST = (function () {
     }
   };
 
-  var drawText = function (obj) { // more uniform way of drawing text
-    stage.fillStyle = colors[obj.color || 20];
-    stage.strokeStyle = colors[obj.outlineColor || 8];
-    stage.lineWidth = obj.outlineWidth || 2;
-    stage.font = (obj.size || 24) + 'px Zelda DX';
-    if (obj.outline) stage.strokeText(obj.text, obj.center ? obj.x - stage.measureText(obj.text).width / 2 : obj.x, obj.y);
-    stage.fillText(obj.text, obj.center ? obj.x - stage.measureText(obj.text).width / 2 : obj.x, obj.y);
+  CanvasRenderingContext2D.prototype.drawText = function (obj) { // more uniform way of drawing text
+    this.fillStyle = colors[obj.color || 20];
+    this.strokeStyle = colors[obj.outlineColor || 8];
+    this.lineWidth = obj.outlineWidth || 2;
+    this.font = (obj.size || 24) + 'px Zelda DX';
+    if (obj.outline) this.strokeText(obj.text, obj.center ? obj.x - this.measureText(obj.text).width / 2 : obj.x, obj.y);
+    this.fillText(obj.text, obj.center ? obj.x - this.measureText(obj.text).width / 2 : obj.x, obj.y);
   };
 
   var CButton = function (obj) { // constructor for buttons
@@ -216,34 +216,48 @@ var RPG_TEST = (function () {
     this.click = obj.click; // <-- will call this function on click
     this.noClickSound = obj.noClickSound ? true : false;
     this.id = obj.id;
+    this.isHovering = false;
   };
 
-  CButton.prototype.draw = function () { // draw proto (might change name later...)
-    var mx = mouse.x;
-    var my = mouse.y;
+  CButton.prototype.draw = function (ctx) { // draw proto (might change name later...)
     var x = this.x;
     var y = this.y;
     var width = this.width;
     var height = this.height;
     if (this.border) {
-      stage.lineWidth = this.borderWidth;
-      stage.strokeStyle = colors[this.borderColor];
-      stage.strokeRect(x - width / 2, y - height / 2, width, height);
+      ctx.lineWidth = this.borderWidth;
+      ctx.strokeStyle = colors[this.borderColor];
+      ctx.strokeRect(x - width / 2, y - height / 2, width, height);
     }
-    stage.fillStyle = this.bgColor;
-    stage.fillRect(x - width / 2, y - height / 2, width, height);
+    ctx.fillStyle = this.bgColor;
+    ctx.fillRect(x - width / 2, y - height / 2, width, height);
 
+    if (this.isHovering) {
+      ctx.fillStyle = this.bgHoverColor;
+      ctx.fillRect(x - width / 2, y - height / 2, width, height);
+    }
+    if (this.text) ctx.drawText({ text: this.text, color: this.color, x: x, y: y + 5, center: true });
+  };
+
+  CButton.prototype.mouse = function (cx, cy) {
+    var mx = mouse.x - (cx ? cx : 0);
+    var my = mouse.y - (cy ? cy : 0);
+    var x = this.x;
+    var y = this.y;
+    var width = this.width;
+    var height = this.height;
     if (mx >= x - width / 2 && mx < x + width / 2 && my >= y - height / 2 && my < y + height / 2) {
-      stage.fillStyle = this.bgHoverColor;
-      stage.fillRect(x - width / 2, y - height / 2, width, height);
+      this.isHovering = true;
       if (this.hover) this.hover();
       if (mouse.click) {
         if (!this.noClickSound) audio.click.play();
         mouse.click = false;
         this.click();
       }
-    } else if (this.notHover) this.notHover();
-    if (this.text) drawText({ text: this.text, color: this.color, x: x, y: y + 5, center: true });
+    } else {
+      this.isHovering = false;
+      if (this.notHover) this.notHover();
+    }
   };
 
   var game = (function () {
@@ -523,10 +537,10 @@ var RPG_TEST = (function () {
     };
 
     var invalidState = function () { // if current game state has no case in switch statement
-      drawText({ text: 'ERROR:', size: 48, color: 2, x: gameSettings.width / 2, y: gameSettings.height / 2, center: true });
-      drawText({ text: 'REQUESTED STATE "' + STATE + '"', color: 2, x: gameSettings.width / 2, y: gameSettings.height / 2 + 40, center: true });
-      drawText({ text: 'DOES NOT EXIST!', color: 2, x: gameSettings.width / 2, y: gameSettings.height / 2 + 60, center: true });
-      drawText({ text: 'Actual gameplay coming soon... ;)', color: 12, x: gameSettings.width / 2, y: gameSettings.height - 60, center: true });
+      stage.drawText({ text: 'ERROR:', size: 48, color: 2, x: gameSettings.width / 2, y: gameSettings.height / 2, center: true });
+      stage.drawText({ text: 'REQUESTED STATE "' + STATE + '"', color: 2, x: gameSettings.width / 2, y: gameSettings.height / 2 + 40, center: true });
+      stage.drawText({ text: 'DOES NOT EXIST!', color: 2, x: gameSettings.width / 2, y: gameSettings.height / 2 + 60, center: true });
+      stage.drawText({ text: 'Actual gameplay coming soon... ;)', color: 12, x: gameSettings.width / 2, y: gameSettings.height - 60, center: true });
     };
 
     var level = (function () { // i cant do physics
@@ -656,14 +670,15 @@ var RPG_TEST = (function () {
             var before = lvl.before;
             cur.x = lvls[l].x - Math.floor(offset);
             if (before && lvl.line) for (var i = 0; i < before.length; i++) drawDottedLine(cur.x, cur.y, mapData.lvls[before[i]].x - Math.floor(offset), mapData.lvls[before[i]].y, 20);
-            cur.draw();
+            cur.mouse();
+            cur.draw(stage);
             stage.fillStyle = lvl.inn ? colors[19] : colors[1];
             if (lvl.dot) stage.fillRect(cur.x - 4, cur.y - 4, 8, 8);
           }
         }
         if (hovering[0]) { // this feels like a really weird way to do this but it works ¯\_(ツ)_/¯
           var textWidth = stage.measureText(hovering[0]).width;
-          drawText({ text: hovering[0], size: 16, x: mouse.x - textWidth / 2 < 0 ? textWidth / 2 : mouse.x, y: mouse.y < 20 ? 10 : mouse.y - 8, center: true });
+          stage.drawText({ text: hovering[0], size: 16, x: mouse.x - textWidth / 2 < 0 ? textWidth / 2 : mouse.x, y: mouse.y < 20 ? 10 : mouse.y - 8, center: true });
         }
       };
 
@@ -675,8 +690,8 @@ var RPG_TEST = (function () {
         if (offset < 0) offset = 0;
         if (offset > offsetLimit) offset = offsetLimit;
 
-        drawText({ text: (offset === 0 ? '' : '<<'), x: 20, y: gameSettings.height / 4, center: true }); // left/right scroll indicators
-        drawText({ text: (offset === offsetLimit ? '' : '>>'), x: gameSettings.width - 20, y: gameSettings.height / 4, center: true });
+        stage.drawText({ text: (offset === 0 ? '' : '<<'), x: 20, y: gameSettings.height / 4, center: true }); // left/right scroll indicators
+        stage.drawText({ text: (offset === offsetLimit ? '' : '>>'), x: gameSettings.width - 20, y: gameSettings.height / 4, center: true });
       };
 
       return {
@@ -692,12 +707,15 @@ var RPG_TEST = (function () {
       }
     })(mapData);
 
-    var inventoryBar = (function () { // unfinished crap
+    var inventoryBar = (function () { // inventory bar on lower half of screen
+      var inventoryCanvas = document.createElement('canvas');
+      var inventoryStage = inventoryCanvas.getContext('2d');
+      var bgColor = colors[23];
       var buttons = {
         inventory: []
       };
-
       var info = [];
+      var lastInfo;
       var isHovering = false;
       var cursorItem = 0;
 
@@ -709,7 +727,7 @@ var RPG_TEST = (function () {
 
         if (section === 'accessories') {
           var weapon = inventoryData.weapons[Math.floor(slotId / 2)];
-          item = weapon ? items[weapon.accessories[slotId % 2].name] : 0
+          item = weapon ? items[weapon.accessories[slotId % 2].name] : 0;
         } else {
           item = items[inventoryData[section][slotId].name];
         }
@@ -777,8 +795,12 @@ var RPG_TEST = (function () {
       };
 
       var drawBg = function (color) {
-        stage.fillStyle = colors[color];
-        stage.fillRect(0, gameSettings.height - 160, gameSettings.width, 160);
+        inventoryStage.fillStyle = color;
+        inventoryStage.fillRect(0, inventoryCanvas.height - 160, inventoryCanvas.width, 160);
+      };
+
+      var drawCanvas = function () {
+        stage.drawImage(inventoryCanvas, 0, gameSettings.height - inventoryCanvas.height);
       };
 
       var drawCursor = function () {
@@ -799,8 +821,8 @@ var RPG_TEST = (function () {
       };
 
       var drawInfo = function () {
-        drawText({ text: 'weapon', size: 10, color: 20, x: 180, y: gameSettings.height - 112, outline: true });
-        drawText({ text: 'accessories', size: 10, color: 20, x: 180, y: gameSettings.height - 72, outline: true });
+        inventoryStage.drawText({ text: 'weapon', size: 10, color: 20, x: 180, y: 40, outline: true });
+        inventoryStage.drawText({ text: 'accessories', size: 10, color: 20, x: 180, y: 30, outline: true });
         if (isHovering) {
           for (var i = 0; i < info.length; i++) {
             var cur = info[i]; // should be using a foreach loop hnugbmnhbtfhmcvyb
@@ -813,12 +835,12 @@ var RPG_TEST = (function () {
               curOutlineColor = 2;
               curOutlineWidth = 1;
             }
-            drawText({
+            inventoryStage.drawText({
               text: cur,
               size: (i ? 13 : 16),
               color: curColor,
-              x: gameSettings.width - 475,
-              y: gameSettings.height - 142 + i * 25 + (i ? 5 : 0),
+              x: inventoryCanvas.width - 475,
+              y: 20 + i * 25 + (i ? 5 : 0),
               outline: true,
               outlineColor: curOutlineColor,
               outlineWidth: curOutlineWidth
@@ -835,7 +857,7 @@ var RPG_TEST = (function () {
           currentSlot = buttons.inventory[i];
           section = currentSlot.id[0];
           slotId = currentSlot.id[1];
-          currentSlot.draw();
+          currentSlot.draw(inventoryStage);
 
           if (section === 'accessories') {
             var weapon = inventoryData.weapons[Math.floor(slotId / 2)];
@@ -854,16 +876,29 @@ var RPG_TEST = (function () {
               currentSpritesheet = sprites.accessory;
               break;
           }
-
-          if (currentItem) stage.drawImage(currentSpritesheet, currentItemData.imageColumn * 24, imageRow, 24, 24, currentSlot.x - 12, currentSlot.y - 12, 24, 24);
+          if (currentItem) inventoryStage.drawImage(currentSpritesheet, currentItemData.imageColumn * 24, imageRow, 24, 24, currentSlot.x - 12, currentSlot.y - 12, 24, 24);
         }
+      };
+
+      var redraw = function () {
+        if (JSON.stringify(info) !== JSON.stringify(lastInfo)) {
+          drawBg(bgColor);
+          drawInfo();
+          drawItemSlots();
+        }
+        lastInfo = info;
+      };
+
+      var setupCanvas = function (height) {
+        inventoryCanvas.width = gameSettings.width;
+        inventoryCanvas.height = height;
       };
 
       var setupWeaponButtons = function () { // weapons
         for (var i = 0; i < 4; i++) {
           buttons.inventory.push(new CButton({
             x: 20 + i * 45,
-            y: gameSettings.height - 100,
+            y: 60,
             width: 35,
             height: 35,
             border: false,
@@ -881,7 +916,7 @@ var RPG_TEST = (function () {
           for (var y = 0; y < 2; y++) {
             buttons.inventory.push(new CButton({
               x: 20 + x * 45,
-              y: gameSettings.height - 60 + y * 40,
+              y: 100 + y * 40,
               width: 35,
               height: 35,
               border: false,
@@ -900,8 +935,8 @@ var RPG_TEST = (function () {
         for (var y = 0; y < 4; y++) { // backpack
           for (var x = 0; x < 6; x++) {
             buttons.inventory.push(new CButton({
-              x: gameSettings.width - 220 + x * 40,
-              y: gameSettings.height - 140 + y * 40,
+              x: inventoryCanvas.width - 220 + x * 40,
+              y: 20 + y * 40,
               width: 35,
               height: 35,
               border: false,
@@ -915,6 +950,7 @@ var RPG_TEST = (function () {
       };
 
       var initButtons = function () {
+        setupCanvas(160);
         setupWeaponButtons();
         setupAccessoryButtons();
         setupBackpackButtons();
@@ -922,10 +958,11 @@ var RPG_TEST = (function () {
       initButtons();
 
       return function () {
-        drawBg(23);
-        drawItemSlots();
-        drawInfo();
-        drawCursor();
+        info = false;
+        for (var i = 0; i < buttons.inventory.length; i++) buttons.inventory[i].mouse(0, gameSettings.height - inventoryCanvas.height);
+        redraw();
+        drawCanvas();
+        drawCursor(); // cursor is drawn on main canvas, so must go in front
       }
     })();
 
@@ -964,14 +1001,14 @@ var RPG_TEST = (function () {
       };
 
       return function () {
-        drawText({
+        stage.drawText({
           text: gameSettings.version,
           color: 20,
           size: 16,
           x: 0,
           y: gameSettings.height
         });
-        drawText({
+        stage.drawText({
           text: 'a game by Literal Line',
           color: 14,
           size: 16,
@@ -981,7 +1018,10 @@ var RPG_TEST = (function () {
         });
         stage.drawImage(sprites.logo, gameSettings.width / 2 - sprites.logo.width / 2, 40, 217, 61);
 
-        for (var b in buttons) if (buttons[b]) buttons[b].draw();
+        for (var b in buttons) if (buttons[b]) {
+          buttons[b].mouse();
+          buttons[b].draw(stage);
+        }
       };
     })();
 
@@ -1022,7 +1062,7 @@ var RPG_TEST = (function () {
       };
 
       return function () {
-        drawText({
+        stage.drawText({
           text: 'Credits',
           color: 14,
           size: 54,
@@ -1030,28 +1070,31 @@ var RPG_TEST = (function () {
           y: 80,
           center: true
         });
-        drawText({
+        stage.drawText({
           text: '• Coding and game engine by Literal Line',
           x: 15,
           y: gameSettings.height / 2
         });
-        drawText({
+        stage.drawText({
           text: "• Sound effects from Dan Ball's",
           x: 15,
           y: gameSettings.height / 2 + 30
         });
-        drawText({
+        stage.drawText({
           text: '• Color pallete from lospec.com',
           x: 15,
           y: gameSettings.height / 2 + 60
         });
-        drawText({
+        stage.drawText({
           text: '  (slightly modified)',
           x: 15,
           y: gameSettings.height / 2 + 90
         });
 
-        for (var b in buttons) if (buttons[b]) buttons[b].draw();
+        for (var b in buttons) if (buttons[b]) {
+          buttons[b].mouse();
+          buttons[b].draw(stage);
+        }
       };
     })();
 
@@ -1204,35 +1247,39 @@ var RPG_TEST = (function () {
       };
 
       return function () {
-        drawText({ text: 'New Game', color: 14, size: 54, x: gameSettings.width / 2, y: 80, center: true });
-        drawText({ text: 'Create your team:', color: 14, size: 20, x: gameSettings.width / 2, y: 120, center: true });
+        stage.drawText({ text: 'New Game', color: 14, size: 54, x: gameSettings.width / 2, y: 80, center: true });
+        stage.drawText({ text: 'Create your team:', color: 14, size: 20, x: gameSettings.width / 2, y: 120, center: true });
 
         for (var b in buttons.members) {
           var cur = buttons.members[b];
           var memberNumber = parseInt(b.slice(-1));
 
           cur.borderColor = memberNumber === selectedMember ? 2 : 20;
-          drawText({
+          stage.drawText({
             text: teamData['member' + memberNumber].class,
             size: 16,
             x: cur.x,
             y: cur.y + 50,
             center: true
           });
-          cur.draw();
+          cur.mouse();
+          cur.draw(stage);
         }
         for (var b in buttons.classes) {
           var cur = buttons.classes[b];
           var classNumber = parseInt(b.slice(-1));
 
           cur.borderColor = classNumber === selectedClass ? 2 : 20;
-          drawText({ text: classList[classNumber - 1], size: 16, x: cur.x, y: cur.y + 50, center: true });
-          cur.draw();
+          stage.drawText({ text: classList[classNumber - 1], size: 16, x: cur.x, y: cur.y + 50, center: true });
+          cur.mouse();
+          cur.draw(stage);
           stage.drawImage(sprites.itemDrops, (classNumber + 1) * 8, 0, 8, 8, cur.x - 16, cur.y - 16, 32, 32); // draw class's weapon drop icon on top of button
         }
         buttons.begin.color = checklist.every(Boolean) ? 10 : 1; // turns green when all team members have been selected a class
-        buttons.back.draw();
-        buttons.begin.draw();
+        buttons.back.mouse();
+        buttons.back.draw(stage);
+        buttons.begin.mouse();
+        buttons.begin.draw(stage);
       };
     })();
 
@@ -1276,8 +1323,8 @@ var RPG_TEST = (function () {
             invalidState(); // if current state does not exist...
         }
 
-        drawText({ text: 'FPS: ' + fps, size: 16, x: 0, y: 12 });
-        /*drawText({ text: 'MS: ' + ms, x: 0, y: 40 });*/
+        stage.drawText({ text: 'FPS: ' + fps, size: 16, x: 0, y: 12 });
+        /*stage.drawText({ text: 'MS: ' + ms, x: 0, y: 40 });*/
         lastDelta = delta;
         lastTimer = timer;
         requestAnimationFrame(game.loop); // and again and again and again and again and again and again...
