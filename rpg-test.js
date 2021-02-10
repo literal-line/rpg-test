@@ -167,9 +167,11 @@ var RPG_TEST = (function () {
     var rect = c.getBoundingClientRect();
     var scaleX = gameSettings.width / rect.width;
     var scaleY = gameSettings.height / rect.height;
+    var mouseX = Math.floor(e.clientX * scaleX - rect.left * scaleX);
+    var mouseY = Math.floor(e.clientY * scaleY - rect.top * scaleY);
     return {
-      x: Math.floor(e.clientX * scaleX - rect.left * scaleX),
-      y: Math.floor(e.clientY * scaleY - rect.top * scaleY)
+      x: mouseX < 0 ? 0 : mouseX > gameSettings.width ? gameSettings.width : mouseX,
+      y: mouseY < 0 ? 0 : mouseY > gameSettings.height ? gameSettings.height : mouseY
     };
   };
 
@@ -201,6 +203,7 @@ var RPG_TEST = (function () {
 
   var CButton = function (obj) { // constructor for buttons
     this.text = obj.text;
+    this.textSize = obj.textSize || 24;
     this.color = obj.color || 20;
     this.x = obj.x;
     this.y = obj.y;
@@ -236,7 +239,7 @@ var RPG_TEST = (function () {
       ctx.fillStyle = this.bgHoverColor;
       ctx.fillRect(x - width / 2, y - height / 2, width, height);
     }
-    if (this.text) ctx.drawText({ text: this.text, color: this.color, x: x, y: y + 5, center: true });
+    if (this.text) ctx.drawText({ text: this.text, size: this.textSize, color: this.color, x: x, y: y + 5, center: true });
   };
 
   CButton.prototype.mouse = function (cx, cy) {
@@ -262,12 +265,13 @@ var RPG_TEST = (function () {
 
   var game = (function () {
     var STATE = 'title'; // keeps track of game state; which functions run during which state is determined by a switch statement at the end of this IIFE
+    var PAUSED = false;
 
     var teamData = { // data for each stickman (will change later)
-      member1: { class: 'Member 1', weapon: '', acc1: '', acc2: '' }, //  placeholder classes for the newGame screen
-      member2: { class: 'Member 2', weapon: '', acc1: '', acc2: '' },
-      member3: { class: 'Member 3', weapon: '', acc1: '', acc2: '' },
-      member4: { class: 'Member 4', weapon: '', acc1: '', acc2: '' }
+      member1: { class: 'Member 1', hp: 0, hpMax: 0, str: 0, dex: 0, mag: 0 },
+      member2: { class: 'Member 2', hp: 0, hpMax: 0, str: 0, dex: 0, mag: 0 },
+      member3: { class: 'Member 3', hp: 0, hpMax: 0, str: 0, dex: 0, mag: 0 },
+      member4: { class: 'Member 4', hp: 0, hpMax: 0, str: 0, dex: 0, mag: 0 }
     };
 
     var classList = ['Assassin', 'Ninja', 'Nunchaku-ka', 'Monk', 'Mage', 'Gunner']; // this array seems to be working ok for now...
@@ -540,8 +544,30 @@ var RPG_TEST = (function () {
       stage.drawText({ text: 'ERROR:', size: 48, color: 2, x: gameSettings.width / 2, y: gameSettings.height / 2, center: true });
       stage.drawText({ text: 'REQUESTED STATE "' + STATE + '"', color: 2, x: gameSettings.width / 2, y: gameSettings.height / 2 + 40, center: true });
       stage.drawText({ text: 'DOES NOT EXIST!', color: 2, x: gameSettings.width / 2, y: gameSettings.height / 2 + 60, center: true });
-      stage.drawText({ text: 'Actual gameplay coming soon... ;)', color: 12, x: gameSettings.width / 2, y: gameSettings.height - 60, center: true });
     };
+
+    var pauseMenu = (function () {
+      var buttons = {
+        toggle: new CButton({
+          text: 'Pause',
+          textSize: 16,
+          x: gameSettings.width - 35,
+          y: 14,
+          width: 66,
+          height: 24,
+          noClickSound: true,
+          click: function () {
+            audio.error.play();
+            PAUSED = !PAUSED;
+          }
+        })
+      };
+
+      return function () {
+        buttons.toggle.mouse();
+        buttons.toggle.draw(stage);
+      }
+    })();
 
     var level = (function () { // i cant do physics
       var levelCanvas = document.createElement('canvas');
@@ -683,7 +709,7 @@ var RPG_TEST = (function () {
       };
 
       var doScrolling = function () { // mouse scrolling
-        if (mouse.y > 0 && mouse.y < mapHeight * 16) { // if within y bounds of map, allow scroll
+        if (mouse.y > 80 && mouse.y < mapHeight * 16) { // if within y bounds of map, allow scroll
           if (mouse.x > scrollRight && mouse.x <= gameSettings.width) offset += ms * ((mouse.x - scrollRight) / 100);
           if (mouse.x < scrollLeft && mouse.x >= 0 && offset > 0) offset -= ms * ((scrollLeft - mouse.x) / 100);
         }
@@ -971,17 +997,28 @@ var RPG_TEST = (function () {
         begin: new CButton({
           text: 'New Game',
           x: gameSettings.width / 2,
-          y: gameSettings.height / 2,
+          y: gameSettings.height / 2 - 15,
           width: 235,
           height: 36,
           click: function () {
             STATE = 'newGame';
           }
         }),
+        continue: new CButton({
+          text: 'Continue',
+          x: gameSettings.width / 2,
+          y: gameSettings.height / 2 + 30,
+          width: 235,
+          height: 36,
+          click: function () {
+            loadGame();
+            STATE = 'map';
+          }
+        }),
         credits: new CButton({
           text: 'Credits',
           x: gameSettings.width / 2,
-          y: gameSettings.height / 2 + 50,
+          y: gameSettings.height / 2 + 75,
           width: 235,
           height: 36,
           click: function () {
@@ -991,7 +1028,7 @@ var RPG_TEST = (function () {
         website: new CButton({
           text: 'More Games...',
           x: gameSettings.width / 2,
-          y: gameSettings.height / 2 + 100,
+          y: gameSettings.height / 2 + 120,
           width: 235,
           height: 36,
           click: function () {
@@ -1236,7 +1273,10 @@ var RPG_TEST = (function () {
           y: gameSettings.height - 40,
           height: 36,
           click: function () {
-            if (checklist.every(Boolean)) STATE = 'map'; // will only continue if all team members have been selected a class
+            if (checklist.every(Boolean)) { // will only continue if all team members have been selected a class
+              saveGame();
+              STATE = 'map';
+            }
           }
         })
       };
@@ -1283,13 +1323,27 @@ var RPG_TEST = (function () {
       };
     })();
 
+    var saveGame = function () {
+      var saveData = {
+        teamData: teamData,
+        inventoryData: inventoryData
+      };
+      window.localStorage.setItem('saveData', JSON.stringify(saveData));
+    };
+
+    var loadGame = function () {
+      var saveData = JSON.parse(window.localStorage.getItem('saveData'));
+      teamData = saveData.teamData;
+      inventoryData = saveData.inventoryData;
+    };
+
     var lastDelta = 0;
     var fps;
     var ms;
     var timer = 0;
     var lastTimer;
 
-    setInterval(function() {
+    setInterval(function () {
       timer++;
     }, 100);
 
@@ -1302,33 +1356,39 @@ var RPG_TEST = (function () {
         fps = Math.floor(1000 / ms); // not actually fps, just frame interval converted into screen refresh rate
         stage.clearRect(0, 0, gameSettings.width, gameSettings.height); // clear screen
 
-        switch (STATE) { // run functions based on game state
-          case 'title':
-            level('title');
-            title();
-            break;
-          case 'credits':
-            level('title');
-            credits();
-            break;
-          case 'newGame':
-            level('title');
-            newGame();
-            break;
-          case 'map':
-            map.draw();
-            inventoryBar();
-            break;
-          default:
-            invalidState(); // if current state does not exist...
+        if (!PAUSED) {
+          switch (STATE) { // run functions based on game state
+            case 'title':
+              level('title');
+              title();
+              break;
+            case 'credits':
+              level('title');
+              credits();
+              break;
+            case 'newGame':
+              level('title');
+              newGame();
+              break;
+            case 'map':
+              map.draw();
+              inventoryBar();
+              break;
+            default:
+              invalidState(); // if current state does not exist...
+          }
         }
+
+        pauseMenu();
 
         stage.drawText({ text: 'FPS: ' + fps, size: 16, x: 0, y: 12 });
         /*stage.drawText({ text: 'MS: ' + ms, x: 0, y: 40 });*/
         lastDelta = delta;
         lastTimer = timer;
         requestAnimationFrame(game.loop); // and again and again and again and again and again and again...
-      }
+      },
+      save: saveGame,
+      load: loadGame
     }
   })();
 
@@ -1346,7 +1406,8 @@ var RPG_TEST = (function () {
       init();
       document.body.insertBefore(canvas, document.getElementById('preload'));
       requestAnimationFrame(game.loop);
-    }
+    },
+    game: game
   };
 })();
 
